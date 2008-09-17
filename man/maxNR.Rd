@@ -8,7 +8,7 @@
 maxNR(fn, grad = NULL, hess = NULL, start, print.level = 0,
       tol = 1e-08, reltol=sqrt(.Machine$double.eps), gradtol = 1e-06,
       steptol = 1e-10, lambdatol = 1e-06, qrtol = 1e-10,
-      iterlim = 15,
+      iterlim = 150,
       constPar = NULL, activePar=rep(TRUE, nParam), ...)
 }
 \arguments{
@@ -98,6 +98,9 @@ the previous one.
     \item{3}{last step could not find higher value (probably not
       converged).}
     \item{4}{iteration limit exceeded.}
+    \item{5}{Infinite value.}
+    \item{6}{Infinite gradient.}
+    \item{7}{Infinite Hessian.}
     \item{100}{Initial value out of range.}
   }
   \item{message}{a short message, describing \code{code}.}

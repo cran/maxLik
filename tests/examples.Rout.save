@@ -1,6 +1,6 @@
 
-R version 2.6.1 (2007-11-26)
-Copyright (C) 2007 The R Foundation for Statistical Computing
+R version 2.7.2 (2008-08-25)
+Copyright (C) 2008 The R Foundation for Statistical Computing
 ISBN 3-900051-07-0
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -29,7 +29,7 @@ Newton-Raphson maximisation
 Number of iterations: 4 
 Return code: 1 
 gradient close to zero. May be a solution 
-Function value: 
+Function value: 1 
 Estimates:
           estimate     gradient
 [1,] -8.834711e-10 1.776357e-09
@@ -45,7 +45,7 @@ Newton-Raphson maximisation
 Number of iterations: 5 
 Return code: 1 
 gradient close to zero. May be a solution 
-Function value: 
+Function value: 0.3678794 
 Estimates:
          estimate      gradient
 [1,] 1.000000e+00 -7.357589e-01
@@ -94,9 +94,9 @@ analytic gradient
 numeric gradient
           [,1]     [,2]
 [1,] -1.534908 16.67607
-(anal - num)/anal
-            [,1]          [,2]
-[1,] 1.98858e-09 -2.089470e-10
+(anal-num)/(0.5*(abs(anal)+abs(num)))
+             [,1]          [,2]
+[1,] -1.98858e-09 -2.089470e-10
 Max relative difference: 1.98858e-09 
 -------- END of compare derivatives -------- 
 > 
@@ -197,7 +197,7 @@ BFGS maximisation
 Number of iterations: 23 6 
 Return code: 0 
 successful convergence  
-Function value: 
+Function value: -199.2063 
 Estimates:
      estimate     gradient
 [1,] 3.189999 1.584377e-05
@@ -238,7 +238,7 @@ Number of iterations: 6
 Return code: 2 
 successive function values within tolerance limit.
 May be a solution 
-Function value: 
+Function value: -21.25086 
 Estimates:
      estimate      gradient
 [1,] 2.197878 -4.774259e-05
@@ -252,7 +252,7 @@ Number of iterations: 6
 Return code: 2 
 successive function values within tolerance limit.
 May be a solution 
-Function value: 
+Function value: -21.25086 
 Estimates:
      estimate      gradient
 [1,] 2.197878 -4.774766e-05
@@ -344,7 +344,7 @@ Newton-Raphson maximisation
 Number of iterations: 5 
 Return code: 1 
 gradient close to zero. May be a solution 
-Function value: 
+Function value: -23.40544 
 Estimates:
      estimate      gradient
 [1,] 2.151027 -8.348877e-07
@@ -358,7 +358,7 @@ Newton-Raphson maximisation
 Number of iterations: 5 
 Return code: 1 
 gradient close to zero. May be a solution 
-Function value: 
+Function value: -23.40544 
 Estimates:
      estimate     gradient
 [1,] 2.151027 9.493475e-08
@@ -375,7 +375,7 @@ Newton-Raphson maximisation
 Number of iterations: 4 
 Return code: 1 
 gradient close to zero. May be a solution 
-Function value: 
+Function value: 1 
 Estimates:
      estimate     gradient
 [1,]        2 7.771561e-10
@@ -391,7 +391,7 @@ BFGS maximisation
 Number of iterations: 31 16 
 Return code: 0 
 successful convergence  
-Function value: 
+Function value: 1 
 Estimates:
      estimate     gradient
 [1,]        2 6.661338e-09
@@ -437,7 +437,7 @@ x2            4.7827     0.3667   13.04   <2e-16 ***
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
 
 Residual standard error: 0.9897 on 97 degrees of freedom
-Multiple R-Squared: 0.7019,	Adjusted R-squared: 0.6957 
+Multiple R-squared: 0.7019,	Adjusted R-squared: 0.6957 
 F-statistic: 114.2 on 2 and 97 DF,  p-value: < 2.2e-16 
 
 > nParam(m) # you get 3
@@ -476,9 +476,9 @@ analytic gradient
 numeric gradient
             [,1]        [,2]
 [1,] -0.01347589 -0.02695179
-(anal - num)/anal
-             [,1]      [,2]
-[1,] 2.763538e-10 5.108e-11
+(anal-num)/(0.5*(abs(anal)+abs(num)))
+              [,1]       [,2]
+[1,] -2.763538e-10 -5.108e-11
 Max relative difference: 2.763538e-10 
 -------- END of compare derivatives -------- 
 > # The differenc is around 1e-10
@@ -582,7 +582,7 @@ Newton-Raphson maximisation
 Number of iterations: 3 
 Return code: 1 
 gradient close to zero. May be a solution 
-Function value: 
+Function value: 2.495230e+27 
 Estimates:
          estimate gradient
 [1,] 1.866669e+13        0
@@ -596,7 +596,7 @@ Newton-Raphson maximisation
 Number of iterations: 1 
 Return code: 1 
 gradient close to zero. May be a solution 
-Function value: 
+Function value: 7.133455e+23 
 Estimates:
           estimate gradient
 [1,]  666667666667        0

@@ -70,4 +70,3 @@ maxNM <- function(fn, grad=NULL, hess=NULL,
    class(result) <- "maxim"
    invisible(result)
 }
-

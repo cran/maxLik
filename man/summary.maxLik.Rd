@@ -6,12 +6,23 @@
   and t-values.
 }
 \usage{
-\method{summary}{maxLik}(object, ... )
+\method{summary}{maxLik}(object, eigentol=1e-12, ... )
 }
 
 \arguments{
-  \item{object}{object of class 'maxLik', most probably a result from
-    Maximum-Likelihood estimation.}
+  \item{object}{
+    object of class 'maxLik', most probably a result from
+    Maximum-Likelihood estimation.
+  }
+  \item{eigentol}{
+    nonzero print limit on the range of the absolute values of the
+    hessian.  Specifically, define:
+
+    absEig <- eigen(hessian(object), symmetric=TRUE)[['values']]
+
+    Then compute and print t values, p values, etc. only if min(absEig)
+    > (eigentol * max(absEig)).  
+  }
   \item{\ldots}{currently not used.}
 }
 \value{

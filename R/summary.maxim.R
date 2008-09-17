@@ -56,14 +56,14 @@ summary.maxim <- function(object, hessian=FALSE, unsucc.step=FALSE,
    else {
       H <- NULL
    }
-   summary <- list(type=object$type,
+   summary <- list(maximum=object$maximum,
+                   type=object$type,
                   iterations=object$iterations,
                   code=object$code,
                   message=object$message,
                    unsucc.step=unsucc.step,
-                   maximum=object$value,
                   estimate=estimate,
                    hessian=H)
-   class(summary) <- "summary.maxim"
+   class(summary) <- c("summary.maxim", class(summary))
    summary
 }
