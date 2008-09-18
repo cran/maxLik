@@ -3,7 +3,6 @@
 \alias{print.summary.maxLik}
 \alias{returnCode.maxim}
 \alias{returnCode.maxLik}
-\alias{AIC}
 % Document the following:
 
 %%%%
