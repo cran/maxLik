@@ -1,6 +1,6 @@
 
-R version 2.7.2 (2008-08-25)
-Copyright (C) 2008 The R Foundation for Statistical Computing
+R version 2.9.1 (2009-06-26)
+Copyright (C) 2009 The R Foundation for Statistical Computing
 ISBN 3-900051-07-0
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -22,7 +22,42 @@ Type 'q()' to quit R.
 > f <- function(a) exp(-a[1]^2 - a[2]^2)
 > #
 > # maximize wrt. both parameters 
-> free <- maxNR(f, start=1:2) 
+> free <- maxNR(f, start=1:2)
+> print( free )
+$maximum
+[1] 1
+
+$estimate
+[1] -8.834711e-10 -5.628342e-11
+
+$gradient
+[1] 1.776357e-09 1.110223e-10
+
+$hessian
+          [,1]      [,2]
+[1,] -1.999956  0.000000
+[2,]  0.000000 -1.999956
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE TRUE
+
+$iterations
+[1] 4
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxim" "list" 
 > summary(free)  # results should be close to (0,0)
 --------------------------------------------
 Newton-Raphson maximisation 
@@ -39,6 +74,41 @@ Estimates:
 [1] TRUE TRUE
 > # allow only the second parameter to vary
 > cons <- maxNR(f, start=1:2, activePar=c(FALSE,TRUE))
+> print( cons )
+$maximum
+[1] 0.3678794
+
+$estimate
+[1] 1.000000e+00 2.946969e-07
+
+$gradient
+[1] -7.357589e-01 -2.167710e-07
+
+$hessian
+          [,1]       [,2]
+[1,] 0.7356338  0.0000000
+[2,] 0.0000000 -0.7356893
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] FALSE  TRUE
+
+$iterations
+[1] 5
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxim" "list" 
 > summary(cons) # result should be around (1,0)
 --------------------------------------------
 Newton-Raphson maximisation 
@@ -96,7 +166,7 @@ numeric gradient
 [1,] -1.534908 16.67607
 (anal-num)/(0.5*(abs(anal)+abs(num)))
              [,1]          [,2]
-[1,] -1.98858e-09 -2.089470e-10
+[1,] -1.98858e-09 -2.089468e-10
 Max relative difference: 1.98858e-09 
 -------- END of compare derivatives -------- 
 > 
@@ -110,6 +180,47 @@ Max relative difference: 1.98858e-09
 > x <- rnorm(1000) # sample from standard normal
 > ml <- maxLik(ll, start=c(1,1))
 > # ignore eventual warnings "NaNs produced in: log(x)"
+> print.default( ml )
+$maximum
+[1] -497.5733
+
+$estimate
+[1] 0.006396535 0.997576255
+
+$gradient
+[1] 0 0
+
+$hessian
+          [,1]      [,2]
+[1,] -1004.878     0.000
+[2,]     0.000 -2009.756
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE TRUE
+
+$iterations
+[1] 7
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxLik" "maxim"  "list"  
+> print( ml )
+Maximum Likelihood estimation
+Newton-Raphson maximisation, 7 iterations
+Return code 1: gradient close to zero. May be a solution
+Log-Likelihood: -497.5733 (2 free parameter(s))
+Estimate(s): 0.006396535 0.9975763 
 > summary(ml) # result should be close to c(0,1)
 --------------------------------------------
 Maximum Likelihood estimation
@@ -119,22 +230,63 @@ Log-Likelihood: -497.5733
 2  free parameters
 Estimates:
       Estimate Std. error t value Pr(> t)    
-[1,] 0.0063965  0.0315468  0.2028  0.8393    
+[1,] 0.0063965  0.0315459  0.2028  0.8393    
 [2,] 0.9975763  0.0223063 44.7216  <2e-16 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
 --------------------------------------------
 > hessian(ml) # How the Hessian looks like
           [,1]      [,2]
-[1,] -1004.821     0.000
+[1,] -1004.878     0.000
 [2,]     0.000 -2009.756
 > sqrt(-solve(hessian(ml))) # Note: standard deviations are on the diagonal
            [,1]       [,2]
-[1,] 0.03154682 0.00000000
+[1,] 0.03154593 0.00000000
 [2,] 0.00000000 0.02230634
 > #
 > # Now run the same example while fixing a[2] = 1
 > mlf <- maxLik(ll, start=c(1,1), activePar=c(TRUE, FALSE))
+> print.default( mlf )
+$maximum
+[1] -497.5792
+
+$estimate
+[1] 0.006396535 1.000000000
+
+$gradient
+[1]  0.000000 -4.841615
+
+$hessian
+          [,1]      [,2]
+[1,] -999.9894     0.000
+[2,]    0.0000 -1985.427
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1]  TRUE FALSE
+
+$iterations
+[1] 3
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxLik" "maxim"  "list"  
+> print( mlf )
+Maximum Likelihood estimation
+Newton-Raphson maximisation, 3 iterations
+Return code 1: gradient close to zero. May be a solution
+Log-Likelihood: -497.5792 (1 free parameter(s))
+Estimate(s): 0.006396535 1 
 > summary(mlf) # first parameter close to 0, the second exactly 1.0
 --------------------------------------------
 Maximum Likelihood estimation
@@ -176,6 +328,46 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 > hesslik <- function(theta) -100/theta^2
 > ## Estimate with analytic gradient and hessian
 > a <- maxLik(loglik, gradlik, hesslik, start=1)
+> print.default( a )
+$maximum
+[1] -25.05386
+
+$estimate
+[1] 2.11586
+
+$gradient
+[1] 6.059581e-08
+
+$hessian
+          [,1]
+[1,] -22.33706
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE
+
+$iterations
+[1] 5
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxLik" "maxim"  "list"  
+> print( a )
+Maximum Likelihood estimation
+Newton-Raphson maximisation, 5 iterations
+Return code 1: gradient close to zero. May be a solution
+Log-Likelihood: -25.05386 (1 free parameter(s))
+Estimate(s): 2.11586 
 > ## print log likelihood value
 > logLik( a )
 [1] -25.05386
@@ -191,7 +383,40 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 > n <- rpois(100, 3)
 > loglik <- function(l) n*log(l) - l - lfactorial(n)
 > # we use numeric gradient
-> summary(maxBFGS(loglik, start=1))
+> a <- maxBFGS(loglik, start=1)
+> print( a )
+$maximum
+[1] -199.2063
+
+$estimate
+[1] 3.189999
+
+$gradient
+[1] 1.584377e-05
+
+$hessian
+          [,1]
+[1,] -31.34797
+
+$code
+[1] 0
+
+$message
+[1] "successful convergence "
+
+$last.step
+NULL
+
+$iterations
+function gradient 
+      23        6 
+
+$type
+[1] "BFGS maximisation"
+
+attr(,"class")
+[1] "maxim"
+> summary( a )
 --------------------------------------------
 BFGS maximisation 
 Number of iterations: 23 6 
@@ -231,6 +456,40 @@ May be a solution
 6  iterations
 estimate: 2.197878 
 Function value: -21.25086 
+> print( a )
+$maximum
+[1] -21.25086
+
+$estimate
+[1] 2.197878
+
+$gradient
+[1] -4.77513e-05
+
+$hessian
+          [,1]
+[1,] -18.42347
+
+$code
+[1] 2
+
+$message
+[1] "successive function values within tolerance limit.\nMay be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE
+
+$iterations
+[1] 6
+
+$type
+[1] "BHHH maximisation"
+
+attr(,"class")
+[1] "maxim" "list" 
 > summary(a)
 --------------------------------------------
 BHHH maximisation 
@@ -240,11 +499,45 @@ successive function values within tolerance limit.
 May be a solution 
 Function value: -21.25086 
 Estimates:
-     estimate      gradient
-[1,] 2.197878 -4.774259e-05
+     estimate     gradient
+[1,] 2.197878 -4.77513e-05
 --------------------------------------------
 > ## Estimate with analytic gradient
 > a <- maxBHHH(loglik, gradlik, start=1)
+> print( a )
+$maximum
+[1] -21.25086
+
+$estimate
+[1] 2.197878
+
+$gradient
+[1] -4.774766e-05
+
+$hessian
+          [,1]
+[1,] -18.42347
+
+$code
+[1] 2
+
+$message
+[1] "successive function values within tolerance limit.\nMay be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE
+
+$iterations
+[1] 6
+
+$type
+[1] "BHHH maximisation"
+
+attr(,"class")
+[1] "maxim" "list" 
 > summary(a)
 --------------------------------------------
 BHHH maximisation 
@@ -283,6 +576,46 @@ gradient close to zero. May be a solution
 5  iterations
 estimate: 2.09534 
 Function value: -26.02842 
+> print.default( a )
+$maximum
+[1] -26.02842
+
+$estimate
+[1] 2.09534
+
+$gradient
+[1] -3.859135e-07
+
+$hessian
+          [,1]
+[1,] -22.79255
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE
+
+$iterations
+[1] 5
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxLik" "maxim"  "list"  
+> print( a )
+Maximum Likelihood estimation
+Newton-Raphson maximisation, 5 iterations
+Return code 1: gradient close to zero. May be a solution
+Log-Likelihood: -26.02842 (1 free parameter(s))
+Estimate(s): 2.09534 
 > summary(a)
 --------------------------------------------
 Maximum Likelihood estimation
@@ -298,6 +631,46 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 --------------------------------------------
 > ## Estimate with analytic gradient and hessian
 > a <- maxLik(loglik, gradlik, hesslik, start=1)
+> print.default( a )
+$maximum
+[1] -26.02842
+
+$estimate
+[1] 2.09534
+
+$gradient
+[1] 4.614954e-08
+
+$hessian
+          [,1]
+[1,] -22.77671
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE
+
+$iterations
+[1] 5
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxLik" "maxim"  "list"  
+> print( a )
+Maximum Likelihood estimation
+Newton-Raphson maximisation, 5 iterations
+Return code 1: gradient close to zero. May be a solution
+Log-Likelihood: -26.02842 (1 free parameter(s))
+Estimate(s): 2.09534 
 > summary(a)
 --------------------------------------------
 Maximum Likelihood estimation
@@ -338,6 +711,40 @@ gradient close to zero. May be a solution
 5  iterations
 estimate: 2.151027 
 Function value: -23.40544 
+> print( a )
+$maximum
+[1] -23.40544
+
+$estimate
+[1] 2.151027
+
+$gradient
+[1] 4.831691e-07
+
+$hessian
+          [,1]
+[1,] -21.61826
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE
+
+$iterations
+[1] 5
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxim" "list" 
 > summary(a)
 --------------------------------------------
 Newton-Raphson maximisation 
@@ -346,12 +753,46 @@ Return code: 1
 gradient close to zero. May be a solution 
 Function value: -23.40544 
 Estimates:
-     estimate      gradient
-[1,] 2.151027 -8.348877e-07
+     estimate     gradient
+[1,] 2.151027 4.831691e-07
 --------------------------------------------
 > ## You would probably prefer 1/mean(t) instead ;-)
 > ## Estimate with analytic gradient and Hessian
 > a <- maxNR(loglik, gradlik, hesslik, start=1)
+> print( a )
+$maximum
+[1] -23.40544
+
+$estimate
+[1] 2.151027
+
+$gradient
+[1] 9.493475e-08
+
+$hessian
+          [,1]
+[1,] -21.61265
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE
+
+$iterations
+[1] 5
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxim" "list" 
 > summary(a)
 --------------------------------------------
 Newton-Raphson maximisation 
@@ -369,6 +810,41 @@ Estimates:
 > ## maximise two-dimensional exponential hat.  Maximum is at c(2,1):
 > f <- function(a) exp(-(a[1] - 2)^2 - (a[2] - 1)^2)
 > m <- maxNR(f, start=c(0,0))
+> print( m )
+$maximum
+[1] 1
+
+$estimate
+[1] 2 1
+
+$gradient
+[1] 7.771561e-10 4.440892e-10
+
+$hessian
+          [,1]      [,2]
+[1,] -2.000067  0.000000
+[2,]  0.000000 -2.000067
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE TRUE
+
+$iterations
+[1] 4
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxim" "list" 
 > summary(m)
 --------------------------------------------
 Newton-Raphson maximisation 
@@ -385,6 +861,39 @@ Estimates:
 [1] "Newton-Raphson maximisation"
 > ## Now use BFGS maximisation.
 > m <- maxBFGS(f, start=c(0,0))
+> print( m )
+$maximum
+[1] 1
+
+$estimate
+[1] 2 1
+
+$gradient
+[1] 6.661338e-09 3.108624e-09
+
+$hessian
+          [,1]      [,2]
+[1,] -1.999998  0.000000
+[2,]  0.000000 -1.999998
+
+$code
+[1] 0
+
+$message
+[1] "successful convergence "
+
+$last.step
+NULL
+
+$iterations
+function gradient 
+      31       16 
+
+$type
+[1] "BFGS maximisation"
+
+attr(,"class")
+[1] "maxim"
 > summary(m)
 --------------------------------------------
 BFGS maximisation 
@@ -488,11 +997,79 @@ Max relative difference: 2.763538e-10
 > ## maximise the exponential bell
 > f1 <- function(x) exp(-x^2)
 > a <- maxNR(f1, start=2)
+> print( a )
+$maximum
+[1] 1
+
+$estimate
+[1] 1.312509e-08
+
+$gradient
+[1] -2.631229e-08
+
+$hessian
+          [,1]
+[1,] -1.999845
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE
+
+$iterations
+[1] 6
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxim" "list" 
 > returnCode(a) # should be success (1 or 2)
 [1] 1
 > ## Now try to maximise log() function
 > f2 <- function(x) log(x)
 > a <- maxNR(f2, start=2)
+> print( a )
+$maximum
+[1] 9.194382
+
+$estimate
+[1] 9841.679
+
+$gradient
+[1] 0.0001016094
+
+$hessian
+             [,1]
+[1,] -0.001776357
+
+$code
+[1] 4
+
+$message
+[1] "Iteration limit exceeded."
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE
+
+$iterations
+[1] 151
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxim" "list" 
 > returnCode(a) # should give a failure (4)
 [1] 4
 > 
@@ -501,11 +1078,79 @@ Max relative difference: 2.763538e-10
 > ## maximise the exponential bell
 > f1 <- function(x) exp(-x^2)
 > a <- maxNR(f1, start=2)
+> print( a )
+$maximum
+[1] 1
+
+$estimate
+[1] 1.312509e-08
+
+$gradient
+[1] -2.631229e-08
+
+$hessian
+          [,1]
+[1,] -1.999845
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE
+
+$iterations
+[1] 6
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxim" "list" 
 > returnMessage(a) # should be success (1 or 2)
 [1] "gradient close to zero. May be a solution"
 > ## Now try to maximise log() function
 > f2 <- function(x) log(x)
 > a <- maxNR(f2, start=2)
+> print( a )
+$maximum
+[1] 9.194382
+
+$estimate
+[1] 9841.679
+
+$gradient
+[1] 0.0001016094
+
+$hessian
+             [,1]
+[1,] -0.001776357
+
+$code
+[1] 4
+
+$message
+[1] "Iteration limit exceeded."
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE
+
+$iterations
+[1] 151
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxim" "list" 
 > returnMessage(a) # should give a failure (4)
 [1] "Iteration limit exceeded."
 > 
@@ -534,6 +1179,46 @@ gradient close to zero. May be a solution
 5  iterations
 estimate: 2.406109 
 Function value: -12.19890 
+> print.default( a )
+$maximum
+[1] -12.19890
+
+$estimate
+[1] 2.406109
+
+$gradient
+[1] 6.000755e-08
+
+$hessian
+          [,1]
+[1,] -17.26719
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE
+
+$iterations
+[1] 5
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxLik" "maxim"  "list"  
+> print( a )
+Maximum Likelihood estimation
+Newton-Raphson maximisation, 5 iterations
+Return code 1: gradient close to zero. May be a solution
+Log-Likelihood: -12.19890 (1 free parameter(s))
+Estimate(s): 2.406109 
 > summary(a)
 --------------------------------------------
 Maximum Likelihood estimation
@@ -549,6 +1234,46 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 --------------------------------------------
 > ## Estimate with analytic gradient and hessian
 > a <- maxLik(loglik, gradlik, hesslik, start=1)
+> print.default( a )
+$maximum
+[1] -12.19890
+
+$estimate
+[1] 2.406109
+
+$gradient
+[1] 5.245804e-14
+
+$hessian
+          [,1]
+[1,] -17.27306
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE
+
+$iterations
+[1] 6
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxLik" "maxim"  "list"  
+> print( a )
+Maximum Likelihood estimation
+Newton-Raphson maximisation, 6 iterations
+Return code 1: gradient close to zero. May be a solution
+Log-Likelihood: -12.19890 (1 free parameter(s))
+Estimate(s): 2.406109 
 > summary(a)
 --------------------------------------------
 Maximum Likelihood estimation
@@ -575,7 +1300,48 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 + }
 > ## Note that NR finds the minimum of a quadratic function with a single
 > ## iteration.  Use c(0,0) as initial value.  
-> result1 <- maxNR( f, start = c(0,0) ) 
+> result1 <- maxNR( f, start = c(0,0) )
+> print( result1 )
+$maximum
+[1] 2.495230e+27
+attr(,"gradient")
+[1] 3.733339e+13 9.266680e+13
+attr(,"hessian")
+     [,1] [,2]
+[1,]    2    0
+[2,]    0    2
+
+$estimate
+[1] 1.866669e+13 4.633340e+13
+
+$gradient
+[1] 0 0
+
+$hessian
+     [,1] [,2]
+[1,]    0    0
+[2,]    0    0
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE TRUE
+
+$iterations
+[1] 3
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxim" "list" 
 > summary( result1 )
 --------------------------------------------
 Newton-Raphson maximisation 
@@ -589,7 +1355,48 @@ Estimates:
 [2,] 4.633340e+13        0
 --------------------------------------------
 > ## Now use c(1000000, -777777) as initial value and ask for hessian
-> result2 <- maxNR( f, start = c( 1000000, -777777)) 
+> result2 <- maxNR( f, start = c( 1000000, -777777))
+> print( result2 )
+$maximum
+[1] 7.133455e+23
+attr(,"gradient")
+[1]  1.333335e+12 -1.037111e+12
+attr(,"hessian")
+     [,1] [,2]
+[1,]    2    0
+[2,]    0    2
+
+$estimate
+[1]  666667666667 -518555465277
+
+$gradient
+[1] 0 0
+
+$hessian
+     [,1] [,2]
+[1,]    0    0
+[2,]    0    0
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE TRUE
+
+$iterations
+[1] 1
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxim" "list" 
 > summary( result2 )
 --------------------------------------------
 Newton-Raphson maximisation 
@@ -628,11 +1435,91 @@ gradient close to zero. May be a solution
 5  iterations
 estimate: 1.863363 
 Function value: -37.76171 
+> print.default( a )
+$maximum
+[1] -37.76171
+
+$estimate
+[1] 1.863363
+
+$gradient
+[1] -2.364775e-08
+
+$hessian
+          [,1]
+[1,] -28.81240
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE
+
+$iterations
+[1] 5
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxLik" "maxim"  "list"  
+> print( a )
+Maximum Likelihood estimation
+Newton-Raphson maximisation, 5 iterations
+Return code 1: gradient close to zero. May be a solution
+Log-Likelihood: -37.76171 (1 free parameter(s))
+Estimate(s): 1.863363 
 > vcov(a)
            [,1]
 [1,] 0.03470728
 > ## Estimate with analytic gradient and hessian
 > a <- maxLik(loglik, gradlik, hesslik, start=1)
+> print.default( a )
+$maximum
+[1] -37.76171
+
+$estimate
+[1] 1.863363
+
+$gradient
+[1] 1.092372e-09
+
+$hessian
+          [,1]
+[1,] -28.80083
+
+$code
+[1] 1
+
+$message
+[1] "gradient close to zero. May be a solution"
+
+$last.step
+NULL
+
+$activePar
+[1] TRUE
+
+$iterations
+[1] 5
+
+$type
+[1] "Newton-Raphson maximisation"
+
+attr(,"class")
+[1] "maxLik" "maxim"  "list"  
+> print( a )
+Maximum Likelihood estimation
+Newton-Raphson maximisation, 5 iterations
+Return code 1: gradient close to zero. May be a solution
+Log-Likelihood: -37.76171 (1 free parameter(s))
+Estimate(s): 1.863363 
 > vcov(a)
            [,1]
 [1,] 0.03472122
