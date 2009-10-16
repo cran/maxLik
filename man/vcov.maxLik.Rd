@@ -22,14 +22,16 @@
    \item{\dots}{further arguments (currently ignored).}
 }
 \value{
-   the estimated variance covariance matrix of the coefficients.
+   the estimated variance covariance matrix of the coefficients.  In
+   case of the estimated Hessian is singular, it's values are
+     \code{Inf}.  The values corresponding to fixed parameters are zero.
 }
 \author{
    Arne Henningsen,
    Ott Toomet \email{otoomet@ut.ee}
 }
 
-\seealso{\code{\link[stat]{vcov}}, \code{\link{maxLik}}.}
+\seealso{\code{\link[stats]{vcov}}, \code{\link{maxLik}}.}
 
 \examples{
 ## ML estimation of exponential duration model:

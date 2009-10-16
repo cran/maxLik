@@ -1,0 +1,684 @@
+
+R version 2.9.2 (2009-08-24)
+Copyright (C) 2009 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> # load the 'maxLik' package
+> library(maxLik)
+> 
+> ## data to fit a normal distribution
+> # set seed for pseudo random numbers
+> set.seed( 123 )
+> # generate a variable of exponentially distributed values
+> x <- rnorm( 100, 1, 2 )
+> xSaved <- x
+> 
+> ## log likelihood function
+> llf <- function( param ) {
++    mu <- param[ 1 ]
++    sigma <- param[ 2 ]
++    N <- length( x )
++    llValue <- -0.5 * N * log( 2 * pi ) - N * log( sigma ) -
++       0.5 * sum( ( x - mu )^2 / sigma^2 )
++    return( llValue )
++ }
+> 
+> ## log likelihood function (individual observations)
+> llfInd <- function( param ) {
++    mu <- param[ 1 ]
++    sigma <- param[ 2 ]
++    llValues <- -0.5 * log( 2 * pi ) - log( sigma ) -
++       0.5 * ( x - mu )^2 / sigma^2
++    return( llValues )
++ }
+> 
+> ## function to calculate analytical gradients
+> gf <- function( param ) {
++    mu <- param[ 1 ]
++    sigma <- param[ 2 ]
++    N <- length( x )
++    llGrad <- c( sum( ( x - mu ) / sigma^2 ),
++       - N / sigma + sum( ( x - mu )^2 / sigma^3 ) )
++    return( llGrad )
++ }
+> 
+> ## function to calculate analytical gradients (individual observations)
+> gfInd <- function( param ) {
++    mu <- param[ 1 ]
++    sigma <- param[ 2 ]
++    llGrads <- cbind( ( x - mu ) / sigma^2,
++       - 1 / sigma + ( x - mu )^2 / sigma^3 )
++    return( llGrads )
++ }
+> 
+> ## function to calculate analytical Hessians
+> hf <- function( param ) {
++    mu <- param[ 1 ]
++    sigma <- param[ 2 ]
++    N <- length( x )
++    llHess <- matrix( c(
++       N * ( - 1 / sigma^2 ),
++       sum( - 2 * ( x - mu ) / sigma^3 ),
++       sum( - 2 * ( x - mu ) / sigma^3 ),
++       N / sigma^2 + sum( - 3 * ( x - mu )^2 / sigma^4 ) ),
++       nrow = 2, ncol = 2 )
++    return( llHess )
++ }
+> 
+> # start values
+> startVal <- c( mu = 0, sigma = 1 )
+> 
+> ## NR method
+> ml <- maxLik( llf, start = startVal )
+> print( ml )
+Maximum Likelihood estimation
+Newton-Raphson maximisation, 7 iterations
+Return code 1: gradient close to zero. May be a solution
+Log-Likelihood: -201.5839 (2 free parameter(s))
+Estimate(s): 1.180812 1.816481 
+> summary( ml )
+--------------------------------------------
+Maximum Likelihood estimation
+Newton-Raphson maximisation, 7 iterations
+Return code 1: gradient close to zero. May be a solution
+Log-Likelihood: -201.5839 
+2  free parameters
+Estimates:
+      Estimate Std. error t value   Pr(> t)    
+mu     1.18081    0.18185  6.4935 8.388e-11 ***
+sigma  1.81648    0.12849 14.1367 < 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+--------------------------------------------
+> activePar( ml )
+[1] TRUE TRUE
+> AIC( ml )
+[1] 407.1679
+> coef( ml )
+      mu    sigma 
+1.180812 1.816481 
+> condiNumber( ml )
+mu 	 1 
+sigma 	 1.668860 
+> hessian( ml )
+            mu     sigma
+mu    -30.2407   0.00000
+sigma   0.0000 -60.56666
+> logLik( ml )
+[1] -201.5839
+> maximType( ml )
+[1] "Newton-Raphson maximisation"
+> nIter( ml )
+[1] 7
+> nObs( ml )
+NULL
+> nParam( ml )
+[1] 2
+> returnCode( ml )
+[1] 1
+> returnMessage( ml )
+[1] "gradient close to zero. May be a solution"
+> vcov( ml )
+              mu      sigma
+mu    0.03306802 0.00000000
+sigma 0.00000000 0.01651073
+> logLik( summary( ml ) )
+[1] -201.5839
+> mlInd <- maxLik( llfInd, start = startVal )
+> summary( mlInd )
+--------------------------------------------
+Maximum Likelihood estimation
+Newton-Raphson maximisation, 7 iterations
+Return code 1: gradient close to zero. May be a solution
+Log-Likelihood: -201.5839 
+2  free parameters
+Estimates:
+      Estimate Std. error t value   Pr(> t)    
+mu     1.18081    0.18168  6.4996 8.055e-11 ***
+sigma  1.81648    0.12846 14.1400 < 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+--------------------------------------------
+> all.equal( ml, mlInd )
+[1] "Component 3: Mean relative difference: 1.363636"    
+[2] "Component 4: Mean relative difference: 0.0009389671"
+> 
+> # with analytical gradients
+> mlg <- maxLik( llf, gf, start = startVal )
+> summary( mlg )
+--------------------------------------------
+Maximum Likelihood estimation
+Newton-Raphson maximisation, 7 iterations
+Return code 1: gradient close to zero. May be a solution
+Log-Likelihood: -201.5839 
+2  free parameters
+Estimates:
+      Estimate Std. error t value   Pr(> t)    
+mu     1.18081    0.18165  6.5005 8.003e-11 ***
+sigma  1.81648    0.12844 14.1421 < 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+--------------------------------------------
+> all.equal( ml, mlg )
+[1] "Component 3: Mean relative difference: 0.9758937"  
+[2] "Component 4: Mean relative difference: 0.001241030"
+> mlgInd <- maxLik( llfInd, gfInd, start = startVal )
+> all.equal( mlInd, mlgInd )
+[1] "Component 3: Mean relative difference: 1.066292"    
+[2] "Component 4: Mean relative difference: 0.0003017794"
+> all.equal( mlg, mlgInd )
+[1] TRUE
+> 
+> # with analytical gradients and Hessians
+> mlgh <- maxLik( llf, gf, hf, start = startVal )
+> all.equal( mlg, mlgh )
+[1] TRUE
+> 
+> 
+> ## BHHH method
+> mlBHHH <- try( maxLik( llf, start = startVal, method = "BHHH" ) )
+Error in grad(theta, ...) : 
+  if the gradients (argument 'grad') are not provided by the user, the BHHH method requires that the log-likelihood function (argument 'fn') returns a numeric vector, where each element must be the log-likelihood value corresponding to an individual (independent) observation
+> x <- xSaved[1]
+> try( maxLik( llfInd, start = startVal, method = "BHHH" ) )
+Error in grad(theta, ...) : 
+  if the gradients (argument 'grad') are not provided by the user, the BHHH method requires that the log-likelihood function (argument 'fn') returns a numeric vector, where each element must be the log-likelihood value corresponding to an individual (independent) observation
+> x <- xSaved[1:2]
+> try( maxLik( llfInd, start = startVal, method = "BHHH" ) )
+Maximum Likelihood estimation
+BHHH maximisation, 8 iterations
+Return code 2: successive function values within tolerance limit.
+May be a solution
+Log-Likelihood: -0.6227434 (2 free parameter(s))
+Estimate(s): 0.2158296 0.3302446 
+There were 25 warnings (use warnings() to see them)
+> x <- xSaved
+> mlBHHH <- maxLik( llfInd, start = startVal, method = "BHHH" )
+> print( mlBHHH )
+Maximum Likelihood estimation
+BHHH maximisation, 13 iterations
+Return code 2: successive function values within tolerance limit.
+May be a solution
+Log-Likelihood: -201.5839 (2 free parameter(s))
+Estimate(s): 1.180812 1.816480 
+> summary( mlBHHH )
+--------------------------------------------
+Maximum Likelihood estimation
+BHHH maximisation, 13 iterations
+Return code 2: successive function values within tolerance limit.
+May be a solution
+Log-Likelihood: -201.5839 
+2  free parameters
+Estimates:
+      Estimate Std. error t value   Pr(> t)    
+mu     1.18081    0.18183  6.4941 8.354e-11 ***
+sigma  1.81648    0.13408 13.5473 < 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+--------------------------------------------
+> activePar( mlBHHH )
+[1] TRUE TRUE
+> AIC( mlBHHH )
+[1] 407.1679
+> coef( mlBHHH )
+      mu    sigma 
+1.180812 1.816480 
+> condiNumber( mlBHHH )
+mu 	 1 
+sigma 	 1.719018 
+> hessian( mlBHHH )
+              mu      sigma
+mu    -30.306718  -1.833532
+sigma  -1.833532 -55.732477
+> logLik( mlBHHH )
+[1] -201.5839
+> maximType( mlBHHH )
+[1] "BHHH maximisation"
+> nIter( mlBHHH )
+[1] 13
+> nObs( mlBHHH )
+NULL
+> nParam( mlBHHH )
+[1] 2
+> returnCode( mlBHHH )
+[1] 2
+> returnMessage( mlBHHH )
+[1] "successive function values within tolerance limit.\nMay be a solution"
+> vcov( mlBHHH )
+                mu        sigma
+mu     0.033061790 -0.001087693
+sigma -0.001087693  0.017978643
+> logLik( summary( mlBHHH ) )
+[1] -201.5839
+> all.equal( ml, mlBHHH )
+[1] "Component 2: Mean relative difference: 2.510401e-07"
+[2] "Component 3: Mean relative difference: 59.37109"    
+[3] "Component 4: Mean relative difference: 0.09434553"  
+[4] "Component 5: Mean relative difference: 1"           
+[5] "Component 6: 1 string mismatch"                     
+[6] "Component 9: Mean relative difference: 0.8571429"   
+[7] "Component 10: 1 string mismatch"                    
+> 
+> # with analytical gradients
+> mlgBHHH <- try( maxLik( llf, gf, start = startVal, method = "BHHH" ) )
+Error in grad(theta, ...) : Gradient is not a matrix.
+the BHHH method requires that the gradient function
+(argument 'grad') returns a numeric matrix,
+where each row must correspond to the gradient(s)
+of the log-likelihood function at an individual
+(independent) observation and each column must
+correspond to a parameter
+> mlgBHHH <- try( maxLik( llfInd, gf, start = startVal, method = "BHHH" ) )
+Error in grad(theta, ...) : Gradient is not a matrix.
+the BHHH method requires that the gradient function
+(argument 'grad') returns a numeric matrix,
+where each row must correspond to the gradient(s)
+of the log-likelihood function at an individual
+(independent) observation and each column must
+correspond to a parameter
+> x <- xSaved[1]
+> try( maxLik( llf, gfInd, start = startVal, method = "BHHH" ) )
+Error in grad(theta, ...) : 
+  the matrix returned by the gradient function (argument 'grad') must have at least as many rows as the number of parameters (2), where each row must correspond to the gradients of the log-likelihood function of an individual (independent) observation:
+ currently, there are (is) 2 parameter(s) but the gradient matrix has only 1 row(s)
+> try( maxLik( llfInd, gfInd, start = startVal, method = "BHHH" ) )
+Error in grad(theta, ...) : 
+  the matrix returned by the gradient function (argument 'grad') must have at least as many rows as the number of parameters (2), where each row must correspond to the gradients of the log-likelihood function of an individual (independent) observation:
+ currently, there are (is) 2 parameter(s) but the gradient matrix has only 1 row(s)
+> x <- xSaved[1:2]
+> try( maxLik( llf, gfInd, start = startVal, method = "BHHH" ) )
+Maximum Likelihood estimation
+BHHH maximisation, 8 iterations
+Return code 2: successive function values within tolerance limit.
+May be a solution
+Log-Likelihood: -0.6227434 (2 free parameter(s))
+Estimate(s): 0.2158296 0.3302446 
+There were 25 warnings (use warnings() to see them)
+> try( maxLik( llfInd, gfInd, start = startVal, method = "BHHH" ) )
+Maximum Likelihood estimation
+BHHH maximisation, 8 iterations
+Return code 2: successive function values within tolerance limit.
+May be a solution
+Log-Likelihood: -0.6227434 (2 free parameter(s))
+Estimate(s): 0.2158296 0.3302446 
+There were 25 warnings (use warnings() to see them)
+> x <- xSaved
+> mlgBHHH <- maxLik( llfInd, gfInd, start = startVal, method = "BHHH" )
+> summary( mlgBHHH )
+--------------------------------------------
+Maximum Likelihood estimation
+BHHH maximisation, 13 iterations
+Return code 2: successive function values within tolerance limit.
+May be a solution
+Log-Likelihood: -201.5839 
+2  free parameters
+Estimates:
+      Estimate Std. error t value   Pr(> t)    
+mu     1.18081    0.18183  6.4941 8.354e-11 ***
+sigma  1.81648    0.13408 13.5473 < 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+--------------------------------------------
+> all.equal( mlBHHH, mlgBHHH )
+[1] "Component 3: Mean relative difference: 0.0002034056"
+> all.equal( mlg, mlgBHHH )
+[1] "Component 2: Mean relative difference: 2.533978e-07"
+[2] "Component 3: Mean absolute difference: 1.880678e-05"
+[3] "Component 4: Mean relative difference: 0.09401655"  
+[4] "Component 5: Mean relative difference: 1"           
+[5] "Component 6: 1 string mismatch"                     
+[6] "Component 9: Mean relative difference: 0.8571429"   
+[7] "Component 10: 1 string mismatch"                    
+> mlgBHHH2 <- maxLik( llf, gfInd, start = startVal, method = "BHHH" )
+> all.equal( mlgBHHH, mlgBHHH2 )
+[1] TRUE
+> 
+> # with unused Hessian
+> mlghBHHH <- maxLik( llfInd, gfInd, hf, start = startVal, method = "BHHH" )
+> all.equal( mlgBHHH, mlghBHHH )
+[1] TRUE
+> 
+> 
+> ## BFGS method
+> mlBFGS <- maxLik( llf, start = startVal, method = "BFGS" )
+Warning messages:
+1: In log(sigma) : NaNs produced
+2: In log(sigma) : NaNs produced
+> print( mlBFGS )
+Maximum Likelihood estimation
+BFGS maximisation, 3615 iterations
+Return code 0: successful convergence 
+Log-Likelihood: -201.5839 (2 free parameter(s))
+Estimate(s): 1.180811 1.816481 
+> summary( mlBFGS )
+--------------------------------------------
+Maximum Likelihood estimation
+BFGS maximisation, 3615 iterations
+Return code 0: successful convergence 
+Log-Likelihood: -201.5839 
+2  free parameters
+Estimates:
+      Estimate Std. error t value   Pr(> t)    
+mu     1.18081    0.18168  6.4996 8.056e-11 ***
+sigma  1.81648    0.12840 14.1466 < 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+--------------------------------------------
+> activePar( mlBFGS )
+[1] TRUE TRUE
+> AIC( mlBFGS )
+[1] 407.1679
+> coef( mlBFGS )
+      mu    sigma 
+1.180811 1.816481 
+> condiNumber( mlBFGS )
+mu 	 1 
+sigma 	 1.668126 
+> hessian( mlBFGS )
+             mu     sigma
+mu    -30.29754   0.00000
+sigma   0.00000 -60.65193
+> logLik( mlBFGS )
+[1] -201.5839
+> maximType( mlBFGS )
+[1] "BFGS maximisation"
+> nIter( mlBFGS )
+function gradient 
+      36       15 
+> nObs( mlBFGS )
+NULL
+> nParam( mlBFGS )
+[1] 2
+> returnCode( mlBFGS )
+[1] 0
+> returnMessage( mlBFGS )
+[1] "successful convergence "
+> vcov( mlBFGS )
+              mu      sigma
+mu    0.03300598 0.00000000
+sigma 0.00000000 0.01648752
+> logLik( summary( mlBFGS ) )
+[1] -201.5839
+> all.equal( ml, mlBFGS )
+[1] "Length mismatch: comparison on first 10 components" 
+[2] "Component 2: Mean relative difference: 6.508353e-07"
+[3] "Component 3: Mean relative difference: 129.5455"    
+[4] "Component 4: Mean relative difference: 0.001564945" 
+[5] "Component 5: Mean relative difference: 1"           
+[6] "Component 6: 1 string mismatch"                     
+[7] "Component 9: names for current but not for target"  
+[8] "Component 9: Numeric: lengths (1, 2) differ"        
+[9] "Component 10: 1 string mismatch"                    
+> mlIndBFGS <- maxLik( llfInd, start = startVal, method = "BFGS" )
+Warning messages:
+1: In log(sigma) : NaNs produced
+2: In log(sigma) : NaNs produced
+> summary( mlIndBFGS )
+--------------------------------------------
+Maximum Likelihood estimation
+BFGS maximisation, 3615 iterations
+Return code 0: successful convergence 
+Log-Likelihood: -201.5839 
+2  free parameters
+Estimates:
+      Estimate Std. error t value   Pr(> t)    
+mu     1.18081    0.18176  6.4965  8.22e-11 ***
+sigma  1.81648    0.12843 14.1433 < 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+--------------------------------------------
+> all.equal( mlBFGS, mlIndBFGS )
+[1] "Component 3: Mean relative difference: 0.001059322"
+[2] "Component 4: Mean relative difference: 0.00125"    
+> 
+> # with analytical gradients
+> mlgBFGS <- maxLik( llf, gf, start = startVal, method = "BFGS" )
+Warning messages:
+1: In log(sigma) : NaNs produced
+2: In log(sigma) : NaNs produced
+> summary( mlgBFGS )
+--------------------------------------------
+Maximum Likelihood estimation
+BFGS maximisation, 3615 iterations
+Return code 0: successful convergence 
+Log-Likelihood: -201.5839 
+2  free parameters
+Estimates:
+      Estimate Std. error t value   Pr(> t)    
+mu     1.18081    0.18165  6.5005 8.003e-11 ***
+sigma  1.81648    0.12844 14.1421 < 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+--------------------------------------------
+> all.equal( mlBFGS, mlgBFGS )
+[1] "Component 3: Mean relative difference: 0.0004838186"
+[2] "Component 4: Mean relative difference: 0.0005264187"
+> all.equal( mlg, mlgBFGS )
+[1] "Length mismatch: comparison on first 10 components" 
+[2] "Component 2: Mean relative difference: 6.483767e-07"
+[3] "Component 3: Mean absolute difference: 4.02496e-05" 
+[4] "Component 4: Mean relative difference: 2.472789e-06"
+[5] "Component 5: Mean relative difference: 1"           
+[6] "Component 6: 1 string mismatch"                     
+[7] "Component 9: names for current but not for target"  
+[8] "Component 9: Numeric: lengths (1, 2) differ"        
+[9] "Component 10: 1 string mismatch"                    
+> mlgIndBFGS <- maxLik( llfInd, gfInd, start = startVal, method = "BFGS" )
+Warning messages:
+1: In log(sigma) : NaNs produced
+2: In log(sigma) : NaNs produced
+> all.equal( mlgBFGS, mlgIndBFGS )
+[1] TRUE
+> 
+> # with unused Hessian
+> mlghBFGS <- maxLik( llf, gf, hf, start = startVal, method = "BFGS" )
+Warning messages:
+1: In log(sigma) : NaNs produced
+2: In log(sigma) : NaNs produced
+> all.equal( mlgBFGS, mlghBFGS )
+[1] TRUE
+> 
+> 
+> ## NM method
+> mlNM <- maxLik( llf, start = startVal, method = "NM" )
+> print( mlNM )
+Maximum Likelihood estimation
+Nelder-Mead maximisation, 63 iterations
+Return code 0: successful convergence 
+Log-Likelihood: -201.5839 (2 free parameter(s))
+Estimate(s): 1.180608 1.816636 
+> summary( mlNM )
+--------------------------------------------
+Maximum Likelihood estimation
+Nelder-Mead maximisation, 63 iterations
+Return code 0: successful convergence 
+Log-Likelihood: -201.5839 
+2  free parameters
+Estimates:
+      Estimate Std. error t value   Pr(> t)    
+mu     1.18061    0.18159  6.5015 7.953e-11 ***
+sigma  1.81664    0.12849 14.1379 < 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+--------------------------------------------
+> activePar( mlNM )
+[1] TRUE TRUE
+> AIC( mlNM )
+[1] 407.1679
+> coef( mlNM )
+      mu    sigma 
+1.180608 1.816636 
+> condiNumber( mlNM )
+mu 	 1 
+sigma 	 1.664480 
+> hessian( mlNM )
+             mu     sigma
+mu    -30.32596   0.00000
+sigma   0.00000 -60.56666
+> logLik( mlNM )
+[1] -201.5839
+> maximType( mlNM )
+[1] "Nelder-Mead maximisation"
+> nIter( mlNM )
+function 
+      63 
+> nObs( mlNM )
+NULL
+> nParam( mlNM )
+[1] 2
+> returnCode( mlNM )
+[1] 0
+> returnMessage( mlNM )
+[1] "successful convergence "
+> vcov( mlNM )
+              mu      sigma
+mu    0.03297504 0.00000000
+sigma 0.00000000 0.01651073
+> logLik( summary( mlNM ) )
+[1] -201.5839
+> all.equal( ml, mlNM )
+[1] "Length mismatch: comparison on first 10 components" 
+[2] "Component 2: Mean relative difference: 0.0001198408"
+[3] "Component 3: Mean relative difference: 24939.59"    
+[4] "Component 4: Mean relative difference: 0.002819549" 
+[5] "Component 5: Mean relative difference: 1"           
+[6] "Component 6: 1 string mismatch"                     
+[7] "Component 9: names for current but not for target"  
+[8] "Component 9: Mean relative difference: 8"           
+[9] "Component 10: 1 string mismatch"                    
+> 
+> # with unused analytical gradients
+> mlgNM <- maxLik( llf, gf, start = startVal, method = "NM" )
+> summary( mlgNM )
+--------------------------------------------
+Maximum Likelihood estimation
+Nelder-Mead maximisation, 63 iterations
+Return code 0: successful convergence 
+Log-Likelihood: -201.5839 
+2  free parameters
+Estimates:
+      Estimate Std. error t value   Pr(> t)    
+mu     1.18061    0.18166  6.4989 8.093e-11 ***
+sigma  1.81664    0.12847 14.1403 < 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+--------------------------------------------
+> all.equal( mlNM, mlgNM )
+[1] "Component 3: Mean relative difference: 1.839327e-06"
+[2] "Component 4: Mean relative difference: 0.0006473064"
+> 
+> # with unused analytical gradients and Hessian
+> mlghNM <- maxLik( llf, gf, hf, start = startVal, method = "NM" )
+> all.equal( mlgNM, mlghNM )
+[1] TRUE
+> 
+> 
+> ## SANN method
+> set.seed( 345 )
+> mlSANN <- maxLik( llf, start = startVal, method = "SANN" )
+> print( mlSANN )
+Maximum Likelihood estimation
+SANN maximisation, 10000 iterations
+Return code 0: successful convergence 
+Log-Likelihood: -201.5841 (2 free parameter(s))
+Estimate(s): 1.182667 1.817799 
+> summary( mlSANN )
+--------------------------------------------
+Maximum Likelihood estimation
+SANN maximisation, 10000 iterations
+Return code 0: successful convergence 
+Log-Likelihood: -201.5841 
+2  free parameters
+Estimates:
+      Estimate Std. error t value   Pr(> t)    
+mu     1.18267    0.18185  6.5037 7.838e-11 ***
+sigma  1.81780    0.12871 14.1237 < 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+--------------------------------------------
+> activePar( mlSANN )
+[1] TRUE TRUE
+> AIC( mlSANN )
+[1] 407.1681
+> coef( mlSANN )
+      mu    sigma 
+1.182667 1.817799 
+> condiNumber( mlSANN )
+mu 	 1 
+sigma 	 1.666407 
+> hessian( mlSANN )
+                mu        sigma
+mu    -30.24069883   0.02842171
+sigma   0.02842171 -60.36771083
+> logLik( mlSANN )
+[1] -201.5841
+> maximType( mlSANN )
+[1] "SANN maximisation"
+> nIter( mlSANN )
+function 
+   10000 
+> nObs( mlSANN )
+NULL
+> nParam( mlSANN )
+[1] 2
+> returnCode( mlSANN )
+[1] 0
+> returnMessage( mlSANN )
+[1] "successful convergence "
+> vcov( mlSANN )
+                mu        sigma
+mu    3.306803e-02 1.556875e-05
+sigma 1.556875e-05 1.656515e-02
+> logLik( summary( mlSANN ) )
+[1] -201.5841
+> all.equal( ml, mlSANN )
+ [1] "Length mismatch: comparison on first 10 components" 
+ [2] "Component 1: Mean relative difference: 5.194937e-07"
+ [3] "Component 2: Mean relative difference: 0.001058985" 
+ [4] "Component 3: Mean relative difference: 217296.7"    
+ [5] "Component 4: Mean relative difference: 0.004223369" 
+ [6] "Component 5: Mean relative difference: 1"           
+ [7] "Component 6: 1 string mismatch"                     
+ [8] "Component 9: names for current but not for target"  
+ [9] "Component 9: Mean relative difference: 1427.571"    
+[10] "Component 10: 1 string mismatch"                    
+> 
+> # with unused analytical gradients
+> set.seed( 345 )
+> mlgSANN <- maxLik( llf, gf, start = startVal, method = "SANN" )
+> summary( mlgSANN )
+--------------------------------------------
+Maximum Likelihood estimation
+SANN maximisation, 10000 iterations
+Return code 0: successful convergence 
+Log-Likelihood: -201.5841 
+2  free parameters
+Estimates:
+      Estimate Std. error t value   Pr(> t)    
+mu     1.18267    0.18178   6.506 7.716e-11 ***
+sigma  1.81780    0.12868  14.127 < 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+--------------------------------------------
+> all.equal( mlSANN, mlgSANN )
+[1] "Component 3: Mean relative difference: 3.697886e-07"
+[2] "Component 4: Mean relative difference: 0.001268123" 
+> 
+> # with unused analytical gradients and Hessian
+> set.seed( 345 )
+> mlghSANN <- maxLik( llf, gf, hf, start = startVal, method = "SANN" )
+> all.equal( mlgSANN, mlghSANN )
+[1] TRUE
+> 

@@ -11,7 +11,8 @@
   inverse of negative hessian is the variance-covariance matrix.
 }
 \usage{
-maxLik(logLik, grad = NULL, hess = NULL, start, method = "Newton-Raphson", ...)
+maxLik(logLik, grad = NULL, hess = NULL, start, method,
+constraints=NULL, ...)
 }
 \arguments{
   \item{logLik}{log-likelihood function.  Must have the parameter vector
@@ -29,14 +30,30 @@ maxLik(logLik, grad = NULL, hess = NULL, start, method = "Newton-Raphson", ...)
   \item{start}{numeric vector, initial value of parameters.}
   \item{method}{maximisation method, currently either "Newton-Raphson", "BFGS",
     "BHHH", "SANN" or "NM" (for Nelder-Mead).  Lower-case letters and
-    shortcuts (as 'nr' for Newton-Raphson) allowed.}
+    shortcuts (as 'nr' for Newton-Raphson) allowed.  If missing, a
+    suitable method is selected automathically.}
+  \item{constraints}{either \code{NULL} for unconstrained maximization
+    or a list, specifying the constraints.  See \code{\link{maxBFGS}}.
+  }
   \item{\dots}{further arguments for the maximisation routine.}
+}
+\details{
+  \code{maxLik} "support" constrained optimization in the sense that
+  constraints are passed further to the underlying optimization
+  routines, and suitable default method is selected.  However, no
+  attempt is made to correct the resulting variance-covariance matrix.
+  Hence, the inference may be wrong.  A corresponding warning is issued
+  by the summary method.
 }
 \value{
   object of class 'maxLik' which inherits from class 'maxim'.
   Components are identical to those of class 'maxim',
   see \code{\link{maxNR}}.
 }
+\section{Warning}{The constrained maximum likelihood estimation should
+  be considered as experimental.  In particular, the variance-covariance
+  matrix is not corrected for constrained parameter space.
+  }
 \author{Ott Toomet \email{otoomet@ut.ee}}
 \seealso{\code{\link{maxNR}}, \code{\link{nlm}} and \code{\link{optim}}
   for different non-linear optimisation routines.}

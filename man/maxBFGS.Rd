@@ -9,12 +9,18 @@
   compatible with \code{\link{maxNR}}
 }
 \usage{
-maxBFGS(fn, grad = NULL, hess=NULL, start, print.level = 0, iterlim = 200,
+maxBFGS(fn, grad = NULL, hess=NULL, start, print.level = 0,
+iterlim = 200,
+constraints,
    tol = 1e-08, reltol=tol, ... )
 maxSANN(fn, grad = NULL, hess = NULL, start, print.level = 0, iterlim =
-   10000, tol = 1e-08, reltol=tol, temp = 10, tmax = 10, parscale = rep(1, length = length(start)), ...)
+   10000,
+   constraints,
+   tol = 1e-08, reltol=tol, temp = 10, tmax = 10, parscale = rep(1, length = length(start)), ...)
 maxNM(fn, grad = NULL, hess = NULL, start, print.level = 0, iterlim =
-   500, tol = 1e-08, reltol=tol, parscale = rep(1, length = length(start)), alpha = 1, beta = 0.5, gamma = 2, ...)
+   500,
+constraints,
+tol = 1e-08, reltol=tol, parscale = rep(1, length = length(start)), alpha = 1, beta = 0.5, gamma = 2, ...)
 }
 
 \arguments{
@@ -34,6 +40,15 @@ maxNM(fn, grad = NULL, hess = NULL, start, print.level = 0, iterlim =
   \item{start}{initial values for the parameters.}
   \item{print.level}{a larger number prints more working information.}
   \item{iterlim}{maximum number of iterations.}
+  \item{constraints}{either \code{NULL} for unconstrained optimization
+    or a list with two components.  The components may be either
+    \code{eqA} and \code{eqB} for equality-constrained optimization
+    \eqn{A \theta + B = 0}{A \%*\% theta + B = 0}; or \code{ineqA} and
+    \code{ineqB} for inequality constraints \eqn{A \theta + B \ge 0}{A
+      \%*\% theta + B >= 0}.  The equality-constrained problem is forwarded
+    to \code{\link{sumt}}, the inequality-constrained case to
+    \code{\link{constrOptim}}.
+  }
   \item{tol, reltol}{the relative convergence tolerance (see
     \code{\link{optim}}).  \code{tol} is for compatibility with \code{\link{maxNR}}.}
   \item{temp}{controls the '"SANN"' method. It is the starting
@@ -63,12 +78,22 @@ maxNM(fn, grad = NULL, hess = NULL, start, print.level = 0, iterlim =
     \code{\link{optim}}).}
   \item{message}{character string giving any additional information
     returned by the optimizer, or NULL.}
+  \item{activePar}{logical vector indicating which parameters are treated
+    as free (currently all parameters).}
   \item{iterations}{two-element integer vector giving the number of
     calls to \code{fn} and \code{gr}, respectively.
     This excludes those calls needed to
     compute the Hessian, if requested, and any calls to \code{fn} to compute a
     finite-difference approximation to the gradient.}
   \item{type}{character string "BFGS maximisation".}
+  \item{constraints}{A list, describing the constrained optimization
+    (\code{NULL} if unconstrained).  Includes the following components:
+    \itemize{
+      \item{type}{type of constrained optimization}
+      \item{outer.iterations}{number of iterations in the constraints step}
+      \item{barrier.value}{value of the barrier function}
+    }
+  }
 }
 \author{Ott Toomet \email{otoomet@ut.ee}}
 
@@ -82,5 +107,20 @@ loglik <- function(l) n*log(l) - l - lfactorial(n)
 summary(maxBFGS(loglik, start=1))
 # you would probably prefer mean(n) instead of that ;-)
 # Note also that maxLik is better suited for Maximum Likelihood
+###
+### Now an example of constrained optimization
+###
+f <- function(theta) {
+  x <- theta[1]
+  y <- theta[2]
+  exp(-(x^2 + y^2))
+  ## Note: you may want to use exp(- theta \%*\% theta) instead ;-)
+}
+## use constraints: x + y >= 1
+A <- matrix(c(1, 1), 1, 2)
+B <- -1
+res <- maxNM(f, start=c(1,1), constraints=list(ineqA=A, ineqB=B),
+print.level=1)
+print(summary(res))
 }
 \keyword{optimize}

@@ -9,7 +9,8 @@ maxNR(fn, grad = NULL, hess = NULL, start, print.level = 0,
       tol = 1e-08, reltol=sqrt(.Machine$double.eps), gradtol = 1e-06,
       steptol = 1e-10, lambdatol = 1e-06, qrtol = 1e-10,
       iterlim = 150,
-      constPar = NULL, activePar=rep(TRUE, nParam), ...)
+      constraints=NULL,
+      activePar=rep(TRUE, length(start)), ...)
 }
 \arguments{
   \item{fn}{function to be maximized.  It must return either a single
@@ -54,10 +55,15 @@ maxNR(fn, grad = NULL, hess = NULL, start, print.level = 0,
   \item{qrtol}{QR-decomposition tolerance}
   \item{iterlim}{stopping condition.  Stop if more than \code{iterlim}
     iterations, return \code{code=4}.}
-  \item{constPar}{index vector.  Which of the parameters must be treated
-    as constants.}
-  \item{activePar}{logical vector, which parameters are treated as free
-    (resp constant)}
+  \item{constraints}{either \code{NULL} for unconstrained optimization
+    or a list with two components
+    \code{eqA} and \code{eqB} for equality-constrained optimization
+    \eqn{A \theta + B = 0}{A \%*\% theta + B = 0}.  The constrained
+    problem is forwarded
+    to \code{\link{sumt}}.
+  }
+  \item{activePar}{index vector, which parameters are treated as free.
+    Other parameters are treated as fixed constants.}
   \item{\dots}{further arguments to \code{fn}, \code{grad} and
     \code{hess}.}
 }
@@ -67,13 +73,15 @@ parameter values.  Constant parameters are useful if a parameter value
 is converging toward the boundary of support, or for testing.  
 
 One way is to put
-\code{constPar} to non-NULL.  Second possibility is to signal by
-\code{fn} which parameters are constant and change the values of the
-parameter vector.  The value of \code{fn} may have following attributes:
+\code{activePar} to non-NULL, specifying which parameters we want to
+change.  However, parameters can also be fixed in runtime by by
+signaling with
+\code{fn}.  This may be useful if an estimation converges toward the
+edge of the parameter space possibly causing problems.  The value of
+\code{fn} may have following attributes:
 \itemize{
 \item{constPar}{index vector.  Which parameters are redefined to
   constant}
-\item{constVal}{numeric vector.  Values for the constant parameters.}
 \item{newVal}{a list with following components:
   \itemize{
   \item{index}{which parameters will have a new value}
@@ -81,10 +89,11 @@ parameter vector.  The value of \code{fn} may have following attributes:
   }
 }
 }
-The difference between \code{constVal} and \code{newVal} is that the
-latter parameters are not set to constants.  If the attribute
-\code{newVal} is present, the new function value is allowed to be below
-the previous one.
+Hence, \code{constVal} specifies which parameters are treated as
+constants.  \code{newVal} allows one to overwrite the existing parameter
+values, possibly the non-constant values as well.  If the attribute
+\code{newVal} is present, the new function value need not to exceed 
+the previous one (maximization is not performed in that step).
 }
 \value{
   list of class "maxim" with following components:
@@ -121,10 +130,18 @@ the previous one.
   \item{activePar}{logical vector, which parameters are not constants.}
   \item{iterations}{number of iterations.}
   \item{type}{character string, type of maximization.}
+  \item{constraints}{A list, describing the constrained optimization
+    (\code{NULL} if unconstrained).  Includes the following components:
+    \itemize{
+      \item{type}{type of constrained optimization}
+      \item{outer.iterations}{number of iterations in the constraints step}
+      \item{barrier.value}{value of the barrier function}
+    }
+  }
 }
 \references{Greene,  W., 2002, \emph{Advanced Econometrics}
-
-  Goldfeld, S. M. and Quandt, R. E., 1972, \emph{Nonlinear Methods in Econometrics}.  Amsterdam: North-Holland}
+  Goldfeld, S. M. and Quandt, R. E., 1972,
+  \emph{Nonlinear Methods in Econometrics}.  Amsterdam: North-Holland}
 \author{Ott Toomet \email{otoomet@ut.ee}}
 \seealso{\code{\link{nlm}} for Newton-Raphson optimization,
   \code{\link{optim}} for different gradient-based optimization
@@ -158,5 +175,20 @@ x <- rnorm(1000, 1, 2) # use mean=1, stdd=2
 N <- length(x)
 res <- maxNR(loglik, start=c(0,1)) # use 'wrong' start values
 summary(res)
+###
+### Now an example of constrained optimization
+###
+## We maximize exp(-x^2 - y^2) where x+y = 1
+f <- function(theta) {
+  x <- theta[1]
+  y <- theta[2]
+  exp(-(x^2 + y^2))
+  ## Note: you may want to use exp(- theta \%*\% theta) instead ;-)
+}
+## use constraints: x + y = 1
+A <- matrix(c(1, 1), 1, 2)
+B <- -1
+res <- maxNR(f, start=c(0,0), constraints=list(eqA=A, eqB=B), print.level=1)
+print(summary(res))
 }
 \keyword{optimize}
