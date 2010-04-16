@@ -14,7 +14,13 @@ cons <- maxNR(f, start=1:2, activePar=c(FALSE,TRUE))
 print( cons )
 summary(cons) # result should be around (1,0)
 activePar(cons)
-
+# specify fixed par in different ways
+cons <- maxNR(f, start=1:2, fixed=1)
+print(summary(cons))
+cons <- maxNR(f, start=1:2, fixed=c(TRUE,FALSE))
+print(summary(cons))
+cons <- maxNR(f, start=c(a=1, b=2), fixed="a")
+print(summary(cons))
 
 ### compareDerivatives
 set.seed( 2 )

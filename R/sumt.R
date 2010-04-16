@@ -29,84 +29,17 @@ sumt <- function(fn, grad=NULL, hess=NULL,
    hessPenalty <- function(theta) {
       2*t(A) %*% A
    }
-   func <- function(theta, ...) {
-      sum(fn(theta, ...))
+
+   ## strip possible arguments of maxRoutine and call the function thereafter
+   callWithoutMaxArgs <- function(theta, fName, ...) {
+      return( callWithoutArgs( theta, fName = fName,
+         args = names(formals(maxRoutine)), ... ) )
    }
-   funcS <- function(theta, ...) {
-      ## this wrapper makes a) single-valued function (in case of BHHH
-      ## vector-valued); and b) strips the 'maxRoutine' extra arguments
-      f <- match.call()
-      f[names(formals(maxRoutine))] <- NULL
-      f[[1]] <- as.name("fn")
-      names(f)[2] <- ""
-      f1 <- eval(f, sys.frame(sys.parent()))
-      sum(f1)
-   }
-   gradient <- function(theta, ...) {
-      if(!is.null(grad)) {
-         g <- grad(theta, ...)
-         if(!is.null(dim(g))) {
-            if(nrow(g) > 1) {
-               g <- colSums( g )
-            }
-         }
-         names( g ) <- names( start )
-         return( g )
-      }
-      g <- numericGradient(func, theta, ...)
-      if(!is.null(dim(g))) {
-         return(colSums(g))
-      } else {
-         return(g)
-      }
-   }
-   gradientS <- function(theta, ...) {
-      g <- match.call()
-      g[names(formals(maxRoutine))] <- NULL
-      if(!is.null(grad)) {
-         g[[1]] <- as.name("grad")
-         names(g)[2] <- ""
-         g <- eval(g, sys.frame(sys.parent()))
-         if(!is.null(dim(g))) {
-            if(nrow(g) > 1) {
-               g <- colSums( g )
-            }
-         }
-         names( g ) <- names( start )
-         return( g )
-      }
-      g[[1]] <- as.name("numericGradient")
-      names(g)[2] <- "t0"
-      g$f <- func
-      g <- eval(g, sys.frame(sys.parent()))
-      if(!is.null(dim(g))) {
-         return(colSums(g))
-      } else {
-         return(g)
-      }
-   }
-   hessianS <- function(theta, ...) {
-      ## just used for computing the final hessian, eventually using the
-      ## supplied analytic information
-      h <- match.call()
-      h[names(formals(maxRoutine))] <- NULL
-      if(!is.null(hess)) {
-         h[[1]] <- as.name("hess")
-         names(h)[2] <- ""
-         h <- eval(h, sys.frame(sys.parent()))
-      } else {
-         h[[1]] <- as.name("numericHessian")
-         names(h)[2] <- "t0"
-         h$f <- func
-         h$grad <- gradient
-         h <- eval(h, sys.frame(sys.parent()))
-      }
-      rownames( h ) <- colnames( h ) <- names( start )
-      return( h )
-   }
+
    ## the penalized objective function
    Phi <- function(theta, ...) {
-      funcS(theta, ...) - rho * penalty(theta)
+      callWithoutMaxArgs( theta, "logLikFunc", fnOrig = fn, gradOrig = grad,
+         hessOrig = hess, ... ) - rho * penalty(theta)
    }
    if(!is.null(grad)) {
       gradPhi<- function(theta, ...) {
@@ -153,17 +86,21 @@ sumt <- function(fn, grad=NULL, hess=NULL,
    theta <- coef(result)
    if(print.level > 0) {
       cat("SUMT initial: rho = ", rho,
-          ", function = ", funcS(theta, ...),
+          ", function = ", callWithoutMaxArgs( theta, "logLikFunc",
+            fnOrig = fn, gradOrig = grad, hessOrig = hess, ... ),
           ", penalty = ", penalty(theta), "\n")
       cat("Estimate:")
       print(theta)
    }
    ## <TODO>
    ## Better upper/lower bounds for rho?
-   if(is.null(SUMTRho0))
-       rho <- max(funcS(start, ...), 1e-3)/max(penalty(start), 1e-3)
-   else
+   if(is.null(SUMTRho0)) {
+       rho <- max( callWithoutMaxArgs( theta, "logLikFunc", fnOrig = fn,
+         gradOrig = grad, hessOrig = hess, ... ), 1e-3) /
+         max(penalty(start), 1e-3)
+   } else {
        rho <- SUMTRho0
+   }
    ## </TODO>
    iter <- 1L
    repeat {
@@ -178,7 +115,8 @@ sumt <- function(fn, grad=NULL, hess=NULL,
       theta <- coef(result)
       if(print.level > 0) {
          cat("SUMT iteration ", iter,
-             ": rho = ", rho, ", function = ", funcS(theta, ...),
+             ": rho = ", rho, ", function = ", callWithoutMaxArgs( theta,
+             "logLikFunc", fnOrig = fn, gradOrig = grad, hessOrig = hess, ... ),
              ", penalty = ", penalty(theta), "\n", sep="")
          cat("Estimate:")
          print(theta)
@@ -192,11 +130,19 @@ sumt <- function(fn, grad=NULL, hess=NULL,
    }
    ## Now we replace the resulting gradient and Hessian with those,
    ## calculated on the original function
-   result$gradient <- gradientS(theta, ...)
-   result$hessian <- hessianS(theta, ...)
+   result$gradient <- callWithoutMaxArgs( theta, "logLikGrad", fnOrig = fn,
+      gradOrig = grad, hessOrig = hess, ... )
+   result$hessian <- callWithoutMaxArgs( theta, "logLikHess", fnOrig = fn,
+      gradOrig = grad, hessOrig = hess, ... )
    result$constraints <- list(type="SUMT",
                              barrier.value=penalty(theta),
                              outer.iterations=iter
                              )
+   if( result$constraints$barrier.value > 0.001 ) {
+      warning( "problem in imposing equality constraints: the constraints",
+         " are not satisfied (barrier value = ",
+         result$constraints$barrier.value, ")" )
+   }
+
    return(result)
 }

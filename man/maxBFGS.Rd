@@ -9,18 +9,20 @@
   compatible with \code{\link{maxNR}}
 }
 \usage{
-maxBFGS(fn, grad = NULL, hess=NULL, start, print.level = 0,
-iterlim = 200,
-constraints,
-   tol = 1e-08, reltol=tol, ... )
-maxSANN(fn, grad = NULL, hess = NULL, start, print.level = 0, iterlim =
-   10000,
-   constraints,
-   tol = 1e-08, reltol=tol, temp = 10, tmax = 10, parscale = rep(1, length = length(start)), ...)
-maxNM(fn, grad = NULL, hess = NULL, start, print.level = 0, iterlim =
-   500,
-constraints,
-tol = 1e-08, reltol=tol, parscale = rep(1, length = length(start)), alpha = 1, beta = 0.5, gamma = 2, ...)
+maxBFGS(fn, grad = NULL, hess=NULL, start, fixed = NULL,
+   print.level = 0, iterlim = 200, constraints = NULL,
+   tol = 1e-08, reltol=tol, parscale=rep(1, length=length(start)), ... )
+
+maxSANN(fn, grad = NULL, hess = NULL, start, fixed = NULL,
+   print.level = 0, iterlim = 10000, constraints = NULL,
+   tol = 1e-08, reltol=tol, cand = NULL, temp = 10, tmax = 10,
+   parscale = rep(1, length = length(start)),
+   random.seed = 123, ... )
+
+maxNM(fn, grad = NULL, hess = NULL, start, fixed = NULL,
+   print.level = 0, iterlim = 500, constraints = NULL,
+   tol = 1e-08, reltol=tol, parscale = rep(1, length = length(start)),
+   alpha = 1, beta = 0.5, gamma = 2, ...)
 }
 
 \arguments{
@@ -38,6 +40,11 @@ tol = 1e-08, reltol=tol, parscale = rep(1, length = length(start)), alpha = 1, b
   \item{hess}{Hessian of the function.  Not used by any of these methods, for
     compatibility with \code{\link{maxNR}}.}
   \item{start}{initial values for the parameters.}
+  \item{fixed}{parameters that should be fixed at their starting values:
+      either a logical vector of the same length as argument \code{start},
+      a numeric (index) vector indicating the positions of the fixed parameters,
+      or a vector of character strings indicating the names of the fixed
+      parameters (parameter names are taken from argument \code{start}).}
   \item{print.level}{a larger number prints more working information.}
   \item{iterlim}{maximum number of iterations.}
   \item{constraints}{either \code{NULL} for unconstrained optimization
@@ -47,15 +54,22 @@ tol = 1e-08, reltol=tol, parscale = rep(1, length = length(start)), alpha = 1, b
     \code{ineqB} for inequality constraints \eqn{A \theta + B \ge 0}{A
       \%*\% theta + B >= 0}.  The equality-constrained problem is forwarded
     to \code{\link{sumt}}, the inequality-constrained case to
-    \code{\link{constrOptim}}.
+    \code{\link{constrOptim2}}.
   }
   \item{tol, reltol}{the relative convergence tolerance (see
     \code{\link{optim}}).  \code{tol} is for compatibility with \code{\link{maxNR}}.}
+  \item{cand}{a function used in the \code{"SANN"} algorithm
+    to generate a new candidate point;
+    if it is \code{NULL}, a default Gaussian Markov kernel is used
+    (see argument \code{gr} of \code{\link{optim}}).}
   \item{temp}{controls the '"SANN"' method. It is the starting
           temperature for the cooling schedule. Defaults to '10'.}
   \item{tmax}{is the number of function evaluations at each temperature
           for the '"SANN"' method. Defaults to '10'. (see
     \code{\link{optim}})}
+  \item{random.seed}{an integer used to seed R's random number generator.
+    This is to ensure replicability when the \sQuote{Simulated Annealing}
+    method is used. Defaults to 123.}
   \item{parscale}{A vector of scaling values for the parameters.
           Optimization is performed on 'par/parscale' and these should
           be comparable in the sense that a unit change in any element
@@ -68,6 +82,16 @@ tol = 1e-08, reltol=tol, parscale = rep(1, length = length(start)), alpha = 1, b
     \code{\link{optim}})}
   \item{\dots}{further arguments for \code{fn} and \code{grad}.}
 }
+
+\details{
+   The \sQuote{state} (or \sQuote{seed}) of R's random number generator
+   is saved at the beginning of the \code{maxSANN} function
+   and restored at the end of this function
+   so that this function does \emph{not} affect the generation of random numbers
+   although the random seed is set to argument \code{random.seed}
+   and the \sQuote{SANN} algorithm uses random numbers.
+}
+
 \value{
   Object of class "maxim":
   \item{maximum}{value of \code{fn} at maximum.}
