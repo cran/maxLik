@@ -14,7 +14,9 @@
 \usage{
 sumt(fn, grad=NULL, hess=NULL,
 start,
-maxRoutine, constraints, SUMTTol = sqrt(.Machine$double.eps),
+maxRoutine, constraints,
+SUMTTol = sqrt(.Machine$double.eps),
+SUMTPenaltyTol = sqrt(.Machine$double.eps),
 SUMTQ = 10,
 SUMTRho0 = NULL,
 print.level = 0, SUMTMaxIter = 100, ...)
@@ -42,9 +44,21 @@ print.level = 0, SUMTMaxIter = 100, ...)
       + B = 0}.  The user must ensure that the matrices \code{A} and
     \code{B} are conformable.}
   \item{SUMTTol}{
-    stopping condition.  If the components of the parameter between
-    successive iterations differ less
-    than \code{SUMTTol}, the algorithm stops
+    stopping condition.  If the coefficient of successive outer
+    iterations are close enough, i.e. maximum of the absolute value over
+    the component difference is smaller than SUMTTol, the algorithm
+    stops.
+
+    Note this does not necessarily mean satisfying the constraints.  In
+    case of the penalty function is too 'weak', SUMT may repeatedly find
+    the same optimum.  In that case a warning is issued.  The user may
+    try to set SUMTTol to a lower value, e.g. to zero.
+  }
+  \item{SUMTPenaltyTol}{
+    stopping condition.  If barrier value (also called penalty)
+    \eqn{(A \beta + B)'(A \beta + B)}{t(A \%*\% beta
+      + B) \%*\% (A \%*\% beta + B)} is less than
+    \code{SUMTTol}, the algorithm stops
   }
   \item{SUMTQ}{
     a double greater than one controlling the growth of the \code{rho}
@@ -78,11 +92,8 @@ print.level = 0, SUMTMaxIter = 100, ...)
      values are increased according to the rule
      \eqn{\varrho_{k+1} = q \varrho_k}{rho_{k+1} = q rho_k} for some
      constant \eqn{q > 1}{q > 1}, until convergence is
-     obtained in the sense that the Euclidean distance between
-     successive solutions \eqn{x_k}{x_k} and \eqn{x_{k+1}}{x_{k+1}} is
-     small enough.  Note that
-     the "solution" \eqn{x}{x} obtained does not necessarily satisfy the
-     constraints, i.e., has zero P(x).  Note also that there is no
+     obtained in the sense that the barrier value
+  \eqn{P(x)'P(x)}{P(x)'P(x)} is close to zero.  Note that there is no
      guarantee that global (approximately) constrained optima are
      found.  Standard practice would recommend to use the best solution
      found in "sufficiently many" replications of the algorithm.
@@ -98,8 +109,10 @@ print.level = 0, SUMTMaxIter = 100, ...)
     Includes the following components:
     \itemize{
       \item{type}{type of constrained optimization}
-      \item{outer.iterations}{number of iterations in the SUMT step}
       \item{barrier.value}{value of the penalty function at maximum}
+      \item{code}{code for the stopping condition}
+      \item{message}{a short message, describing the stopping condition}
+      \item{outer.iterations}{number of iterations in the SUMT step}
     }
   }
 }

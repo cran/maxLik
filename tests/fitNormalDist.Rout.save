@@ -1,6 +1,6 @@
 
-R version 2.10.1 (2009-12-14)
-Copyright (C) 2009 The R Foundation for Statistical Computing
+R version 2.11.0 (2010-04-22)
+Copyright (C) 2010 The R Foundation for Statistical Computing
 ISBN 3-900051-07-0
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -202,7 +202,7 @@ Maximum Likelihood estimation
 BHHH maximisation, 8 iterations
 Return code 2: successive function values within tolerance limit
 Log-Likelihood: -0.6227434 (2 free parameter(s))
-Estimate(s): 0.2158296 0.3302446 
+Estimate(s): 0.2158296 0.3302445 
 There were 25 warnings (use warnings() to see them)
 > x <- xSaved
 > mlBHHH <- maxLik( llfInd, start = startVal, method = "BHHH" )
@@ -302,14 +302,14 @@ Maximum Likelihood estimation
 BHHH maximisation, 8 iterations
 Return code 2: successive function values within tolerance limit
 Log-Likelihood: -0.6227434 (2 free parameter(s))
-Estimate(s): 0.2158296 0.3302446 
+Estimate(s): 0.2158296 0.3302445 
 There were 25 warnings (use warnings() to see them)
 > try( maxLik( llfInd, gfInd, start = startVal, method = "BHHH" ) )
 Maximum Likelihood estimation
 BHHH maximisation, 8 iterations
 Return code 2: successive function values within tolerance limit
 Log-Likelihood: -0.6227434 (2 free parameter(s))
-Estimate(s): 0.2158296 0.3302446 
+Estimate(s): 0.2158296 0.3302445 
 There were 25 warnings (use warnings() to see them)
 > x <- xSaved
 > mlgBHHH <- maxLik( llfInd, gfInd, start = startVal, method = "BHHH" )
@@ -1909,42 +1909,44 @@ Constrained optimization based on constrOptim
 > print( mlCon )
 Maximum Likelihood estimation
 Newton-Raphson maximisation, 2 iterations
-Return code 2: successive function values within tolerance limit
+Return code 1: gradient close to zero
 Log-Likelihood: -204.5333 (2 free parameter(s))
-Estimate(s): 0.8197386 1.680261 
+Estimate(s): 0.81975 1.680264 
 > summary( mlCon )
 --------------------------------------------
 Maximum Likelihood estimation
 Newton-Raphson maximisation, 2 iterations
-Return code 2: successive function values within tolerance limit
+Return code 1: gradient close to zero
 Log-Likelihood: -204.5333 
 2  free parameters
 Estimates:
       Estimate Std. error t value   Pr(> t)    
-mu     0.81974    0.17422  4.7052 2.536e-06 ***
-sigma  1.68026    0.10708 15.6910 < 2.2e-16 ***
+mu     0.81975    0.17422  4.7051 2.537e-06 ***
+sigma  1.68026    0.10714 15.6833 < 2.2e-16 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
 
 Warning: constrained likelihood estimation. Inference is probably wrong
 Constrained optimization based on SUMT 
-14  outer iterations, barrier value 2.070085e-18 
+Return code: 1 
+penalty close to zero 
+10  outer iterations, barrier value 2.069940e-10 
 --------------------------------------------
 > activePar( mlCon )
    mu sigma 
  TRUE  TRUE 
 > AIC( mlCon )
-[1] 413.0667
+[1] 413.0665
 > coef( mlCon )
-       mu     sigma 
-0.8197386 1.6802614 
+      mu    sigma 
+0.819750 1.680264 
 > condiNumber( mlCon )
 mu 	 1 
-sigma 	 3.610984 
+sigma 	 3.609165 
 > hessian( mlCon )
              mu     sigma
 mu    -35.41345 -15.20561
-sigma -15.20561 -93.73480
+sigma -15.20561 -93.64953
 > logLik( mlCon )
 [1] -204.5333
 > maximType( mlCon )
@@ -1956,19 +1958,38 @@ NULL
 > nParam( mlCon )
 [1] 2
 > returnCode( mlCon )
-[1] 2
+[1] 1
 > returnMessage( mlCon )
-[1] "successive function values within tolerance limit"
+[1] "gradient close to zero"
 > vcov( mlCon )
-               mu       sigma
-mu     0.03035196 -0.00492368
-sigma -0.00492368  0.01146711
+                mu        sigma
+mu     0.030354028 -0.004928499
+sigma -0.004928499  0.011478337
 > logLik( summary( mlCon ) )
 [1] -204.5333
-> # mlConInd <- maxLik( llfInd, start = startVal, constraints = eqCon )
->    ##### this optimization seems to end up in an infinite loop
-> # summary( mlConInd )
-> # all.equal( mlCon, mlConInd )
+> mlConInd <- maxLik( llfInd, start = startVal, constraints = eqCon )
+> summary( mlConInd )
+--------------------------------------------
+Maximum Likelihood estimation
+Newton-Raphson maximisation, 2 iterations
+Return code 1: gradient close to zero
+Log-Likelihood: -204.5333 
+2  free parameters
+Estimates:
+      Estimate Std. error t value   Pr(> t)    
+mu     0.81975    0.17423  4.7051 2.537e-06 ***
+sigma  1.68026    0.10715 15.6808 < 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+
+Warning: constrained likelihood estimation. Inference is probably wrong
+Constrained optimization based on SUMT 
+Return code: 1 
+penalty close to zero 
+10  outer iterations, barrier value 2.069940e-10 
+--------------------------------------------
+> all.equal( mlCon, mlConInd )
+[1] "Component 4: Mean relative difference: 0.0003034901"
 > 
 > # with analytical gradients
 > mlgCon <- maxLik( llf, gf, start = startVal, constraints = eqCon )
@@ -1990,17 +2011,33 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Warning: constrained likelihood estimation. Inference is probably wrong
 Constrained optimization based on SUMT 
+Return code: 2 
+successive function values within tolerance limit 
 7  outer iterations, barrier value 0.0001298936 
 --------------------------------------------
 > all.equal( mlCon[ -c( 5, 6, 7, 9 ) ], mlgCon[ -c( 5, 6, 7, 9 ) ] )
-[1] "Component 1: Mean relative difference: 0.0003801127"             
-[2] "Component 2: Mean relative difference: 0.01295996"               
-[3] "Component 3: Mean relative difference: 0.05055701"               
-[4] "Component 4: Mean relative difference: 0.02444884"               
-[5] "Component 7: Component 2: Mean absolute difference: 0.0001298936"
-[6] "Component 7: Component 3: Mean relative difference: 0.5"         
+[1] "Component 1: Mean relative difference: 0.0003796631"             
+[2] "Component 2: Mean relative difference: 0.01295649"               
+[3] "Component 3: Mean relative difference: 0.0505588"                
+[4] "Component 4: Mean relative difference: 0.02499657"               
+[5] "Component 7: Component 2: Mean absolute difference: 0.0001298934"
+[6] "Component 7: Component 3: Mean relative difference: 1"           
+[7] "Component 7: Component 4: 1 string mismatch"                     
+[8] "Component 7: Component 5: Mean relative difference: 0.3"         
 > mlgConInd <- maxLik( llfInd, gfInd, start = startVal, constraints = eqCon )
-> # all.equal( mlConInd, mlgConInd )
+> all.equal( mlConInd, mlgConInd )
+ [1] "Component 1: Mean relative difference: 0.0003796631"              
+ [2] "Component 2: Mean relative difference: 0.01295649"                
+ [3] "Component 3: Mean relative difference: 0.0505588"                 
+ [4] "Component 4: Mean relative difference: 0.02517928"                
+ [5] "Component 5: Mean relative difference: 2"                         
+ [6] "Component 6: 1 string mismatch"                                   
+ [7] "Component 7: target is NULL, current is list"                     
+ [8] "Component 9: Mean relative difference: 0.5"                       
+ [9] "Component 11: Component 2: Mean absolute difference: 0.0001298934"
+[10] "Component 11: Component 3: Mean relative difference: 1"           
+[11] "Component 11: Component 4: 1 string mismatch"                     
+[12] "Component 11: Component 5: Mean relative difference: 0.3"         
 > all.equal( mlgCon, mlgConInd )
 [1] TRUE
 > 
@@ -2038,6 +2075,8 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Warning: constrained likelihood estimation. Inference is probably wrong
 Constrained optimization based on SUMT 
+Return code: 2 
+successive function values within tolerance limit 
 9  outer iterations, barrier value 6.258206e-05 
 --------------------------------------------
 > activePar( mlBhhhCon )
@@ -2076,12 +2115,14 @@ sigma -0.005304105  0.010400542
 > logLik( summary( mlBhhhCon ) )
 [1] -207.4343
 > all.equal( mlCon[ -c( 5, 6, 7, 9, 10 ) ], mlBhhhCon[ -c( 5, 6, 7, 9, 10 ) ] )
-[1] "Component 1: Mean relative difference: 0.01418328"               
-[2] "Component 2: Mean relative difference: 0.01298822"               
-[3] "Component 3: Mean relative difference: 0.07383704"               
-[4] "Component 4: Mean relative difference: 0.2463159"                
-[5] "Component 6: Component 2: Mean absolute difference: 6.258206e-05"
-[6] "Component 6: Component 3: Mean relative difference: 0.3571429"   
+[1] "Component 1: Mean relative difference: 0.01418374"               
+[2] "Component 2: Mean relative difference: 0.01298475"               
+[3] "Component 3: Mean relative difference: 0.07383964"               
+[4] "Component 4: Mean relative difference: 0.2469823"                
+[5] "Component 6: Component 2: Mean absolute difference: 6.258185e-05"
+[6] "Component 6: Component 3: Mean relative difference: 1"           
+[7] "Component 6: Component 4: 1 string mismatch"                     
+[8] "Component 6: Component 5: Mean relative difference: 0.1"         
 > 
 > # with analytical gradients
 > mlgBhhhCon <- maxLik( llf, gfInd, start = startVal, constraints = eqCon,
@@ -2104,6 +2145,8 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Warning: constrained likelihood estimation. Inference is probably wrong
 Constrained optimization based on SUMT 
+Return code: 2 
+successive function values within tolerance limit 
 9  outer iterations, barrier value 6.258206e-05 
 --------------------------------------------
 > all.equal( mlBhhhCon, mlgBhhhCon )
@@ -2122,53 +2165,55 @@ Constrained optimization based on SUMT
 > ## BFGS method with equality constraints
 > mlBfgsCon <- maxLik( llf, start = startVal, constraints = eqCon,
 +    method = "BFGS" )
-There were 29 warnings (use warnings() to see them)
+There were 17 warnings (use warnings() to see them)
 > print( mlBfgsCon )
 Maximum Likelihood estimation
-BFGS maximisation, 17 iterations
+BFGS maximisation, 33 iterations
 Return code 0: successful convergence 
 Log-Likelihood: -204.5333 (2 free parameter(s))
-Estimate(s): 0.8196756 1.680324 
+Estimate(s): 0.81975 1.680264 
 > summary( mlBfgsCon )
 --------------------------------------------
 Maximum Likelihood estimation
-BFGS maximisation, 17 iterations
+BFGS maximisation, 33 iterations
 Return code 0: successful convergence 
 Log-Likelihood: -204.5333 
 2  free parameters
 Estimates:
       Estimate Std. error t value   Pr(> t)    
-mu     0.81968    0.17425  4.7041 2.550e-06 ***
-sigma  1.68032    0.10713 15.6842 < 2.2e-16 ***
+mu     0.81975    0.17422  4.7052 2.536e-06 ***
+sigma  1.68026    0.10712 15.6859 < 2.2e-16 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
 
 Warning: constrained likelihood estimation. Inference is probably wrong
 Constrained optimization based on SUMT 
-14  outer iterations, barrier value 3.001124e-17 
+Return code: 1 
+penalty close to zero 
+10  outer iterations, barrier value 2.069938e-10 
 --------------------------------------------
 > activePar( mlBfgsCon )
    mu sigma 
  TRUE  TRUE 
 > AIC( mlBfgsCon )
-[1] 413.0667
+[1] 413.0665
 > coef( mlBfgsCon )
-       mu     sigma 
-0.8196756 1.6803244 
+      mu    sigma 
+0.819750 1.680264 
 > condiNumber( mlBfgsCon )
 mu 	 1 
-sigma 	 3.613032 
+sigma 	 3.609771 
 > hessian( mlBfgsCon )
              mu     sigma
-mu    -35.41345 -15.23404
-sigma -15.23404 -93.67795
+mu    -35.41345 -15.20561
+sigma -15.20561 -93.67795
 > logLik( mlBfgsCon )
 [1] -204.5333
 > maximType( mlBfgsCon )
 [1] "BFGS maximisation"
 > nIter( mlBfgsCon )
 function 
-      17 
+      33 
 > nObs( mlBfgsCon )
 NULL
 > nParam( mlBfgsCon )
@@ -2179,38 +2224,37 @@ NULL
 [1] "successful convergence "
 > vcov( mlBfgsCon )
                 mu        sigma
-mu     0.030361849 -0.004937485
-sigma -0.004937485  0.011477811
+mu     0.030353338 -0.004926892
+sigma -0.004926892  0.011474593
 > logLik( summary( mlBfgsCon ) )
 [1] -204.5333
 > all.equal( mlBfgsCon[ -c( 5, 6, 9, 10 ) ], mlCon[ -c( 5, 6, 9, 10 ) ] )
-[1] "Component 2: Mean relative difference: 5.035888e-05"
-[2] "Component 3: Mean relative difference: 0.0002427766"
-[3] "Component 4: Mean relative difference: 0.000915751" 
+[1] "Component 4: Mean relative difference: 0.0003033981"
 > mlBfgsConInd <- maxLik( llfInd, start = startVal, constraints = eqCon,
 +    method = "BFGS" )
-There were 29 warnings (use warnings() to see them)
+There were 17 warnings (use warnings() to see them)
 > summary( mlBfgsConInd )
 --------------------------------------------
 Maximum Likelihood estimation
-BFGS maximisation, 17 iterations
+BFGS maximisation, 33 iterations
 Return code 0: successful convergence 
 Log-Likelihood: -204.5333 
 2  free parameters
 Estimates:
       Estimate Std. error t value   Pr(> t)    
-mu     0.81968    0.17424  4.7042 2.549e-06 ***
-sigma  1.68032    0.10712 15.6868 < 2.2e-16 ***
+mu     0.81975    0.17424  4.7046 2.544e-06 ***
+sigma  1.68026    0.10712 15.6862 < 2.2e-16 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
 
 Warning: constrained likelihood estimation. Inference is probably wrong
 Constrained optimization based on SUMT 
-14  outer iterations, barrier value 3.006647e-17 
+Return code: 1 
+penalty close to zero 
+10  outer iterations, barrier value 2.069938e-10 
 --------------------------------------------
 > all.equal( mlBfgsCon, mlBfgsConInd )
-[1] "Component 3: Mean relative difference: 2.111516e-08"
-[2] "Component 4: Mean relative difference: 0.0003033981"
+[1] "Component 4: Mean relative difference: 0.0006871278"
 > 
 > # with analytical gradients
 > mlgBfgsCon <- maxLik( llf, gf, start = startVal, constraints = eqCon,
@@ -2232,16 +2276,20 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Warning: constrained likelihood estimation. Inference is probably wrong
 Constrained optimization based on SUMT 
+Return code: 2 
+successive function values within tolerance limit 
 7  outer iterations, barrier value 0.0002480587 
 --------------------------------------------
 > all.equal( mlBfgsCon, mlgBfgsCon )
-[1] "Component 1: Mean relative difference: 0.001553997"               
-[2] "Component 2: Mean relative difference: 0.00629995"                
-[3] "Component 3: Mean relative difference: 0.05474843"                
-[4] "Component 4: Mean relative difference: 0.02689147"                
-[5] "Component 9: Mean relative difference: 0.7647059"                 
-[6] "Component 11: Component 2: Mean absolute difference: 0.0002480587"
-[7] "Component 11: Component 3: Mean relative difference: 0.5"         
+[1] "Component 1: Mean relative difference: 0.001554449"               
+[2] "Component 2: Mean relative difference: 0.00630567"                
+[3] "Component 3: Mean relative difference: 0.05463436"                
+[4] "Component 4: Mean relative difference: 0.02725743"                
+[5] "Component 9: Mean relative difference: 0.0909091"                 
+[6] "Component 11: Component 2: Mean absolute difference: 0.0002480585"
+[7] "Component 11: Component 3: Mean relative difference: 1"           
+[8] "Component 11: Component 4: 1 string mismatch"                     
+[9] "Component 11: Component 5: Mean relative difference: 0.3"         
 > mlgBfgsConInd <- maxLik( llfInd, gfInd, start = startVal, constraints = eqCon,
 +    method = "BFGS" )
 There were 22 warnings (use warnings() to see them)
@@ -2256,56 +2304,55 @@ There were 22 warnings (use warnings() to see them)
 [1] TRUE
 > 
 > ## NM method with equality constraints
-> mlNmCon <- maxLik( llf, start = startVal, constraints = eqCon, method = "NM" )
-Warning message:
-In function (fn, grad = NULL, hess = NULL, start, maxRoutine, constraints,  :
-  problem in imposing equality constraints: the constraints are not satisfied (barrier value = 0.246970620518863)
+> mlNmCon <- maxLik( llf, start = startVal, constraints = eqCon, method = "NM", SUMTTol=0)
 > print( mlNmCon )
 Maximum Likelihood estimation
-Nelder-Mead maximisation, 41 iterations
+Nelder-Mead maximisation, 57 iterations
 Return code 0: successful convergence 
-Log-Likelihood: -201.5850 (2 free parameter(s))
-Estimate(s): 1.180647 1.816315 
+Log-Likelihood: -204.5333 (2 free parameter(s))
+Estimate(s): 0.8196969 1.680319 
 > summary( mlNmCon )
 --------------------------------------------
 Maximum Likelihood estimation
-Nelder-Mead maximisation, 41 iterations
+Nelder-Mead maximisation, 57 iterations
 Return code 0: successful convergence 
-Log-Likelihood: -201.5850 
+Log-Likelihood: -204.5333 
 2  free parameters
 Estimates:
       Estimate Std. error t value   Pr(> t)    
-mu     1.18065    0.18151  6.5048 7.782e-11 ***
-sigma  1.81631    0.12843 14.1420 < 2.2e-16 ***
+mu     0.81970    0.17422  4.7048 2.541e-06 ***
+sigma  1.68032    0.10714 15.6838 < 2.2e-16 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
 
 Warning: constrained likelihood estimation. Inference is probably wrong
 Constrained optimization based on SUMT 
-2  outer iterations, barrier value 0.2469706 
+Return code: 1 
+penalty close to zero 
+10  outer iterations, barrier value 2.417620e-10 
 --------------------------------------------
 > activePar( mlNmCon )
    mu sigma 
  TRUE  TRUE 
 > AIC( mlNmCon )
-[1] 407.1701
+[1] 413.0665
 > coef( mlNmCon )
-      mu    sigma 
-1.180647 1.816315 
+       mu     sigma 
+0.8196969 1.6803187 
 > condiNumber( mlNmCon )
 mu 	 1 
-sigma 	 1.664482 
+sigma 	 3.609165 
 > hessian( mlNmCon )
              mu     sigma
-mu    -30.35439   0.00000
-sigma   0.00000 -60.62351
+mu    -35.41345 -15.20561
+sigma -15.20561 -93.64953
 > logLik( mlNmCon )
-[1] -201.5850
+[1] -204.5333
 > maximType( mlNmCon )
 [1] "Nelder-Mead maximisation"
 > nIter( mlNmCon )
 function 
-      41 
+      57 
 > nObs( mlNmCon )
 NULL
 > nParam( mlNmCon )
@@ -2315,118 +2362,105 @@ NULL
 > returnMessage( mlNmCon )
 [1] "successful convergence "
 > vcov( mlNmCon )
-              mu      sigma
-mu    0.03294417 0.00000000
-sigma 0.00000000 0.01649525
+                mu        sigma
+mu     0.030354028 -0.004928499
+sigma -0.004928499  0.011478337
 > logLik( summary( mlNmCon ) )
-[1] -201.5850
+[1] -204.5333
 > all.equal( mlNmCon[ -c( 5, 6, 9, 10 ) ], mlCon[ -c( 5, 6, 9, 10 ) ] )
-[1] "Component 1: Mean relative difference: 0.01462560"    
-[2] "Component 2: Mean relative difference: 0.1658218"     
-[3] "Component 3: Mean relative difference: 1695.996"      
-[4] "Component 4: Mean relative difference: 0.753827"      
-[5] "Component 7: Component 2: Mean relative difference: 1"
-[6] "Component 7: Component 3: Mean relative difference: 6"
+[1] "Component 2: Mean relative difference: 4.298649e-05"
+[2] "Component 3: Mean relative difference: 0.0002085726"
 > mlNmConInd <- maxLik( llfInd, start = startVal, constraints = eqCon,
-+    method = "NM" )
-Warning message:
-In function (fn, grad = NULL, hess = NULL, start, maxRoutine, constraints,  :
-  problem in imposing equality constraints: the constraints are not satisfied (barrier value = 0.246970620518863)
++    method = "NM", SUMTTol=0)
 > summary( mlNmConInd )
 --------------------------------------------
 Maximum Likelihood estimation
-Nelder-Mead maximisation, 41 iterations
+Nelder-Mead maximisation, 57 iterations
 Return code 0: successful convergence 
-Log-Likelihood: -201.5850 
+Log-Likelihood: -204.5333 
 2  free parameters
 Estimates:
       Estimate Std. error t value   Pr(> t)    
-mu     1.18065    0.18159  6.5017 7.942e-11 ***
-sigma  1.81631    0.12840 14.1453 < 2.2e-16 ***
+mu     0.81970    0.17422  4.7048 2.541e-06 ***
+sigma  1.68032    0.10714 15.6838 < 2.2e-16 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
 
 Warning: constrained likelihood estimation. Inference is probably wrong
 Constrained optimization based on SUMT 
-2  outer iterations, barrier value 0.2469706 
+Return code: 1 
+penalty close to zero 
+10  outer iterations, barrier value 2.417620e-10 
 --------------------------------------------
 > all.equal( mlNmCon, mlNmConInd )
-[1] "Component 3: Mean relative difference: 5.683594e-06"
-[2] "Component 4: Mean relative difference: 0.001249609" 
+[1] TRUE
 > 
 > # with unused analytical gradients
 > mlgNmCon <- maxLik( llf, gf, start = startVal, constraints = eqCon,
-+    method = "NM" )
-Warning message:
-In function (fn, grad = NULL, hess = NULL, start, maxRoutine, constraints,  :
-  problem in imposing equality constraints: the constraints are not satisfied (barrier value = 0.246970620518863)
++    method = "NM", SUMTTol=0)
 > all.equal( mlNmCon, mlgNmCon )
-[1] "Component 3: Mean relative difference: 1.499498e-06"
-[2] "Component 4: Mean relative difference: 0.0007777456"
+[1] "Component 4: Mean relative difference: 0.0003072491"
 > mlgNmConInd <- maxLik( llfInd, gfInd, start = startVal, constraints = eqCon,
-+    method = "NM" )
-Warning message:
-In function (fn, grad = NULL, hess = NULL, start, maxRoutine, constraints,  :
-  problem in imposing equality constraints: the constraints are not satisfied (barrier value = 0.246970620518863)
++    method = "NM", SUMTTol=0)
 > all.equal( mlgNmCon, mlgNmConInd )
 [1] TRUE
 > 
 > # with unused analytical gradients and Hessians
 > mlghNmCon <- maxLik( llf, gf, hf, start = startVal, constraints = eqCon,
-+    method = "NM" )
-Warning message:
-In function (fn, grad = NULL, hess = NULL, start, maxRoutine, constraints,  :
-  problem in imposing equality constraints: the constraints are not satisfied (barrier value = 0.246970620518863)
++    method = "NM", SUMTTol=0)
 > all.equal( mlgNmCon, mlghNmCon )
 [1] TRUE
 > 
 > ## SANN method with equality constraints
 > mlSannCon <- maxLik( llf, start = startVal, constraints = eqCon,
-+    method = "SANN" )
-Warning message:
-In function (fn, grad = NULL, hess = NULL, start, maxRoutine, constraints,  :
-  problem in imposing equality constraints: the constraints are not satisfied (barrier value = 0.246867072551006)
++    method = "SANN", SUMTTol=0)
+Warning messages:
+1: In log(sigma) : NaNs produced
+2: In log(sigma) : NaNs produced
+3: In log(sigma) : NaNs produced
 > print( mlSannCon )
 Maximum Likelihood estimation
 SANN maximisation, 10000 iterations
 Return code 0: successful convergence 
-Log-Likelihood: -201.5850 (2 free parameter(s))
-Estimate(s): 1.180793 1.816064 
+Log-Likelihood: -204.5345 (2 free parameter(s))
+Estimate(s): 0.8159587 1.684006 
 > summary( mlSannCon )
 --------------------------------------------
 Maximum Likelihood estimation
 SANN maximisation, 10000 iterations
 Return code 0: successful convergence 
-Log-Likelihood: -201.5850 
+Log-Likelihood: -204.5345 
 2  free parameters
 Estimates:
       Estimate Std. error t value   Pr(> t)    
-mu     1.18079    0.18168  6.4995 8.061e-11 ***
-sigma  1.81606    0.12837 14.1467 < 2.2e-16 ***
+mu     0.81596    0.17474  4.6697 3.017e-06 ***
+sigma  1.68401    0.10773 15.6321 < 2.2e-16 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
 
 Warning: constrained likelihood estimation. Inference is probably wrong
 Constrained optimization based on SUMT 
-2  outer iterations, barrier value 0.2468671 
+Return code: 1 
+penalty close to zero 
+9  outer iterations, barrier value 1.234006e-09 
 --------------------------------------------
 > activePar( mlSannCon )
    mu sigma 
  TRUE  TRUE 
 > AIC( mlSannCon )
-[1] 407.1701
+[1] 413.0691
 > coef( mlSannCon )
-      mu    sigma 
-1.180793 1.816064 
+       mu     sigma 
+0.8159587 1.6840062 
 > condiNumber( mlSannCon )
 mu 	 1 
-sigma 	 1.671515 
+sigma 	 3.615891 
 > hessian( mlSannCon )
-                mu        sigma
-mu    -30.29754225   0.02842171
-sigma   0.02842171 -60.68034963
+             mu     sigma
+mu    -35.27134 -15.29088
+sigma -15.29088 -92.79688
 > logLik( mlSannCon )
-[1] -201.5850
+[1] -204.5345
 > maximType( mlSannCon )
 [1] "SANN maximisation"
 > nIter( mlSannCon )
@@ -2441,28 +2475,27 @@ NULL
 > returnMessage( mlSannCon )
 [1] "successful convergence "
 > vcov( mlSannCon )
-                mu        sigma
-mu    3.300599e-02 1.545948e-05
-sigma 1.545948e-05 1.647981e-02
+               mu       sigma
+mu     0.03053273 -0.00503112
+sigma -0.00503112  0.01160524
 > logLik( summary( mlSannCon ) )
-[1] -201.5850
+[1] -204.5345
 > all.equal( mlSannCon[ -c( 5, 6, 9, 10 ) ], mlBfgsCon[ -c( 5, 6, 9, 10 ) ] )
-[1] "Component 1: Mean relative difference: 0.01462559"    
-[2] "Component 2: Mean relative difference: 0.1657928"     
-[3] "Component 3: Mean relative difference: 989.2445"      
-[4] "Component 4: Mean relative difference: 0.7539806"     
-[5] "Component 7: Component 2: Mean relative difference: 1"
-[6] "Component 7: Component 3: Mean relative difference: 6"
+[1] "Component 1: Mean relative difference: 6.295965e-06"          
+[2] "Component 2: Mean relative difference: 0.003013289"           
+[3] "Component 3: Mean relative difference: 0.01450713"            
+[4] "Component 4: Mean relative difference: 0.007524185"           
+[5] "Component 7: Component 5: Mean relative difference: 0.1111111"
 > 
 > # with unused analytical gradients
 > mlgSannCon <- maxLik( llf, gf, start = startVal, constraints = eqCon,
-+    method = "SANN" )
-Warning message:
-In function (fn, grad = NULL, hess = NULL, start, maxRoutine, constraints,  :
-  problem in imposing equality constraints: the constraints are not satisfied (barrier value = 0.246867072551006)
++    method = "SANN", SUMTTol=0)
+Warning messages:
+1: In log(sigma) : NaNs produced
+2: In log(sigma) : NaNs produced
+3: In log(sigma) : NaNs produced
 > all.equal( mlSannCon, mlgSannCon )
-[1] "Component 3: Mean relative difference: 7.706088e-07"
-[2] "Component 4: Mean relative difference: 0.0009192663"
+[1] "Component 4: Mean relative difference: 0.0002449429"
 > 
 > # with a user-specified function to generate a new candidate point
 > mlSannConCand <- maxLik( llf, start = startVal, constraints = eqCon,
@@ -2484,13 +2517,18 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Warning: constrained likelihood estimation. Inference is probably wrong
 Constrained optimization based on SUMT 
+Return code: 2 
+successive function values within tolerance limit 
 2  outer iterations, barrier value 0.2547804 
 --------------------------------------------
 > all.equal( mlSannConCand, mlSannCon )
-[1] "Component 1: Mean relative difference: 4.436627e-06"            
-[2] "Component 2: Mean relative difference: 0.002629342"             
-[3] "Component 3: Mean relative difference: 1.068397"                
-[4] "Component 4: Mean relative difference: 0.01167192"              
-[5] "Component 11: Component 2: Mean relative difference: 0.03105928"
+[1] "Component 1: Mean relative difference: 0.01462702"       
+[2] "Component 2: Mean relative difference: 0.1679979"        
+[3] "Component 3: Mean relative difference: 68.17022"         
+[4] "Component 4: Mean relative difference: 0.763407"         
+[5] "Component 11: Component 2: Mean relative difference: 1"  
+[6] "Component 11: Component 3: Mean relative difference: 0.5"
+[7] "Component 11: Component 4: 1 string mismatch"            
+[8] "Component 11: Component 5: Mean relative difference: 3.5"
 > 
 > 
