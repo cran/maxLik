@@ -1,12 +1,10 @@
-maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
+
+maxBFGSR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
                   tol=1e-8, reltol=sqrt(.Machine$double.eps),
                   gradtol=1e-6, steptol=1e-10,
-                  lambdatol=1e-6,
-                  qrtol=1e-10,
                   iterlim=150,
                   constraints=NULL,
-                  finalHessian=TRUE,
-                  bhhhHessian=FALSE,
+                      finalHessian=TRUE,
                   fixed=NULL,
                   activePar=NULL,
                   ...) {
@@ -23,8 +21,6 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
    ## hess        - hessian function (numeric used if missing)
    ## start       - initial parameter vector (eventually w/names)
    ## steptol     - minimum step size
-   ## lambdatol   - max lowest eigenvalue when forcing pos. definite H
-   ## qrtol       - tolerance for qr decomposition
    ## ...         - extra arguments for fn()
    ## The stopping criteria
    ## tol         - maximum allowed absolute difference between sequential values
@@ -61,9 +57,8 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
    ## activePar   logical vector, which parameters were treated as free (resp fixed)
    ## iterations  number of iterations
    ## type        "Newton-Raphson maximisation"
-
    argNames <- c( "fn", "grad", "hess", "start", "print.level",
-      "tol", "reltol", "gradtol", "steptol", "lambdatol", "qrtol",
+      "tol", "reltol", "gradtol", "steptol",
       "iterlim", "activePar", "fixed" )
    checkFuncArgs( fn, argNames, "fn", "maxNR" )
    if( !is.null( grad ) ) {
@@ -72,24 +67,18 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
    if( !is.null( hess ) ) {
       checkFuncArgs( hess, argNames, "hess", "maxNR" )
    }
-
    ## establish the active parameters.  Internally, we just use 'activePar'
    fixed <- prepareFixed( start = start, activePar = activePar,
       fixed = fixed )
-
    if(is.null(constraints)) {
-
-       result <- maxNRCompute(fn=logLikAttr,
+       result <- maxBFGSRCompute(fn=logLikAttr,
                               fnOrig = fn, gradOrig = grad, hessOrig = hess,
                               start=start,
                               print.level=print.level,
                               tol=tol, reltol=reltol,
                               gradtol=gradtol, steptol=steptol,
-                              lambdatol=lambdatol,
-                              qrtol=qrtol,
-                              finalHessian=finalHessian,
-                              bhhhHessian=bhhhHessian,
                               iterlim=iterlim,
+                                  finalHessian=finalHessian,
                               fixed=fixed,
                               ...)
    } else {
@@ -99,15 +88,11 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
                            # equality constraints: A %*% beta + B = 0
          result <- sumt(fn=fn, grad=grad, hess=hess,
                         start=start,
-                        maxRoutine=maxNR,
+                        maxRoutine=maxBFGSR,
                         constraints=constraints,
                         print.level=print.level,
                         tol=tol, reltol=reltol,
                         gradtol=gradtol, steptol=steptol,
-                        lambdatol=lambdatol,
-                        qrtol=qrtol,
-                        finalHessian=finalHessian,
-                        bhhhHessian=bhhhHessian,
                         iterlim=iterlim,
                         fixed=fixed,
                         ...) 

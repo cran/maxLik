@@ -4,11 +4,18 @@ maxOptim <- function(fn, grad, hess,
                     iterlim,
                     constraints,
                     tol, reltol,
+                     finalHessian=TRUE,
                     parscale,
                     alpha = NULL, beta = NULL, gamma = NULL,
                     temp = NULL, tmax = NULL, random.seed = NULL, cand = NULL,
                     ...) {
-
+   ## Wrapper of optim-based optimization methods
+   ##
+   ## finalHessian:   how (and if) to calculate the final Hessian:
+   ##            FALSE   not calculate
+   ##            TRUE    use analytic/numeric Hessian
+   ##            bhhh/BHHH  use information equality approach
+   ##
    if( method == "Nelder-Mead" ) {
       maxMethod <- "maxNM"
    } else {
@@ -38,6 +45,11 @@ maxOptim <- function(fn, grad, hess,
                )
    }
 
+   ## initialize variables for saving gradients provided as attributes
+   ## and the corresponding parameter values
+   lastFuncGrad <- NULL
+   lastFuncParam <- NULL
+
    ## strip possible SUMT parameters and call the function thereafter
    environment( callWithoutSumt ) <- environment()
    maximType <- paste( method, "maximisation" )
@@ -61,6 +73,18 @@ maxOptim <- function(fn, grad, hess,
    }
    if(print.level > 2) {
       cat("Initial function value:", f1, "\n")
+   }
+   hasGradAttr <- !is.null( attr( f1, "gradient" ) )
+   if( hasGradAttr && !is.null( grad ) ) {
+      grad <- NULL
+      warning( "the gradient is provided both as attribute 'gradient' and",
+         " as argument 'grad': ignoring argument 'grad'" )
+   }
+   hasHessAttr <- !is.null( attr( f1, "hessian" ) )
+   if( hasHessAttr && !is.null( hess ) ) {
+      hess <- NULL
+      warning( "the Hessian is provided both as attribute 'hessian' and",
+         " as argument 'hess': ignoring argument 'hess'" )
    }
    if( method == "BFGS" ) {
       G1 <- callWithoutSumt( start, "logLikGrad", fnOrig = fn, gradOrig = grad,
@@ -155,25 +179,54 @@ maxOptim <- function(fn, grad, hess,
    # estimates (including fixed parameters)
    estimate <- start
    estimate[ !fixed ] <- result$par
-
-   # calculate (final) Hessian
-   hessian <- logLikHess( estimate, fnOrig = fn,  gradOrig = grad,
-      hessOrig = hess, ... )
+   ## Calculate the final gradient
+   gradient <- callWithoutSumt( estimate, "logLikGrad",
+                               fnOrig = fn, gradOrig = grad, hessOrig = hess, sumObs = FALSE,
+                               ... )
+   if(observationGradient(gradient, length(start))) {
+      gradientObs <- gradient
+      gradient <- colSums(as.matrix(gradient ))
+   }
+   else {
+      gradientObs <- NULL
+   }
+   ## calculate (final) Hessian
+   if(tolower(finalHessian) == "bhhh") {
+      if(!is.null(gradientObs)) {
+         hessian <- - crossprod( gradientObs )
+         attr(hessian, "type") <- "BHHH"
+      } else {
+         hessian <- NULL
+         warning("For computing the final Hessian by 'BHHH' method, the log-likelihood or gradient must be supplied by observations")
+      }
+   } else if(finalHessian != FALSE) {
+      hessian <- as.matrix( logLikHess( estimate, fnOrig = fn,  gradOrig = grad,
+                            hessOrig = hess, ... ) )
+   } else {
+       hessian <- NULL
+   }
+   if( !is.null( hessian ) ) {
+      rownames( hessian ) <- colnames( hessian ) <- names( estimate )
+   }
 
    result <- list(
                    maximum=result$value,
                    estimate=estimate,
-                   gradient=callWithoutSumt( estimate, "logLikGrad",
-                     fnOrig = fn, gradOrig = grad, hessOrig = hess, ... ),
+                   gradient=drop(gradient),
+                           # ensure the final (non-observation) gradient is just a vector
                    hessian=hessian,
                    code=result$convergence,
                    message=paste(message(result$convergence), result$message),
                    last.step=NULL,
-                   activePar = !fixed,
+                   fixed = fixed,
                    iterations=result$counts[1],
                    type=maximType,
                   constraints=resultConstraints
                   )
+   if( exists( "gradientObs" ) ) {
+      result$gradientObs <- gradientObs
+   }
+
    class(result) <- "maxim"
    return(result)
 }

@@ -1,30 +1,64 @@
 \name{maxNR}
 \alias{maxNR}
-\title{Newton-Raphson Maximization}
+\alias{maxBFGSR}
+\alias{maxBHHH}
+\title{Newton- and Quasi-Newton Maximization}
 \description{
-  Unconstrained maximization based on Newton-Raphson method.
+  Unconstrained maximization based on the quadratic approximation
+  (Newton) method.
+  The Newton-Raphson, BFGS (Broyden 1970, Fletcher 1970, Goldfarb 1970,
+  Shanno 1970), and BHHH (Berndt, Hall, Hall, Hausman 1974) methods
+  are available.
 }
 \usage{
 maxNR(fn, grad = NULL, hess = NULL, start, print.level = 0,
       tol = 1e-08, reltol=sqrt(.Machine$double.eps), gradtol = 1e-06,
-      steptol = 1e-10, lambdatol = 1e-06, qrtol = 1e-10,
-      iterlim = 150,
-      constraints=NULL,
-      fixed=NULL, activePar=NULL, ... )
+      steptol = 1e-10, lambdatol = 1e-06, qrtol = 1e-10, iterlim = 150,
+      constraints = NULL, finalHessian = TRUE, bhhhHessian=FALSE,
+      fixed = NULL, activePar = NULL, ... )
+maxBFGSR(fn, grad = NULL, hess = NULL, start, print.level = 0,
+      tol = 1e-8, reltol=sqrt(.Machine$double.eps), gradtol = 1e-6,
+      steptol = 1e-10, iterlim = 150,
+      constraints = NULL, finalHessian = TRUE,
+      fixed = NULL, activePar = NULL, ... )
+maxBHHH(fn, grad = NULL, hess = NULL, start, print.level = 0,
+      iterlim = 100, finalHessian = "BHHH", ... )
 }
 \arguments{
-  \item{fn}{function to be maximized.  It must return either a single
-    number or a numeric vector, which is summed (this is useful for BHHH
-    method).  If the parameters are out of range, \code{fn} should
-    return \code{NA}.  See details for constant parameters.}
-  \item{grad}{gradient of the function.  If \code{NULL}, numeric
-    gradient is used.  It must return a gradient vector, or matrix where
-    \emph{columns} correspond to individual parameters.  The column sums
-    are treated as gradient components (this is useful for BHHH method).
+  \item{fn}{function to be maximized.
+    It must have the parameter vector as the first argument and
+    it must return either a single number or a numeric vector, which is summed.
+    If the BHHH method is used and argument \code{gradient} is not given,
+    \code{fn} must return a numeric vector of observation-specific
+    likelihood values.
+    If the parameters are out of range, \code{fn} should
+    return \code{NA}.  See details for constant parameters.
+
+    \code{fn} may also return attributes "gradient" and/or "hessian".
+    If these attributes are set, the algorithm uses the corresponding
+    values as
+    gradient and Hessian.
   }
-  \item{hess}{Hessian matrix of the function.  If missing, numeric
-    Hessian, based on gradient, is used.  }
-  \item{start}{initial value for the parameter vector}
+  \item{grad}{gradient of the objective function.
+    It must have the parameter vector as the first argument and
+    it must return either a gradient vector of the objective function,
+    or a matrix, where \emph{columns} correspond to individual parameters.
+    The column sums are treated as gradient components.
+    If \code{NULL}, finite-difference gradients are computed.
+    If the BHHH method is used, \code{grad} must return a matrix,
+    where rows corresponds to the gradient vectors of individual
+    observations and the columns to the individual parameters.
+    If \code{fn} returns an object with attribute \code{gradient},
+    this argument is ignored.
+  }
+  \item{hess}{Hessian matrix of the function.
+    It must have the parameter vector as the first argument and
+    it must return the Hessian matrix of the objective function.
+    If missing, finite-difference Hessians, based on \code{gradient},
+    are computed.
+    Hessians are used for maximizations with the Newton-Raphson method
+    but not for maximizations with the BFGS or BHHH method.}
+  \item{start}{initial value for the parameter vector.}
   \item{print.level}{this argument determines the level of
     printing which is done during the minimization process. The default
     value of 0 means that no printing occurs, a value of 1 means that
@@ -33,7 +67,7 @@ maxNR(fn, grad = NULL, hess = NULL, start, print.level = 0,
     values will result in even more details.
   }
   \item{tol}{stopping condition.  Stop if the absolute difference
-    between successive iterations less than \code{tol}, return
+    between successive iterations is less than \code{tol}, return
     \code{code=2}.}
   \item{reltol}{Relative convergence tolerance.  The algorithm stops if
           it is unable to increase the value by a factor of 'reltol *
@@ -62,6 +96,18 @@ maxNR(fn, grad = NULL, hess = NULL, start, print.level = 0,
     problem is forwarded
     to \code{\link{sumt}}.
   }
+  \item{finalHessian}{how (and if) to calculate the final Hessian.  Either
+    \code{FALSE} (do not calculate), \code{TRUE} (use analytic/finite-difference
+    Hessian) or \code{"bhhh"}/\code{"BHHH"} for the information equality
+    approach.  The latter approach is only suitable for maximizing
+    log-likelihood functions.  It requires the gradient/log-likelihood to
+    be supplied by individual observations.
+    Note that computing the (real, not BHHH) final Hessian
+    does not carry any extra penalty for the NR method,
+    but for the other methods.}
+  \item{bhhhHessian}{logical. Indicating whether the approximation
+      for the Hessian suggested by Bernd, Hall, Hall, and Hausman (1974)
+      should be used.}
   \item{fixed}{parameters that should be fixed at their starting values:
       either a logical vector of the same length as argument \code{start},
       a numeric (index) vector indicating the positions of the fixed parameters,
@@ -70,20 +116,42 @@ maxNR(fn, grad = NULL, hess = NULL, start, print.level = 0,
   \item{activePar}{this argument is retained for backward compatibility only;
       please use argument \code{fixed} instead.}
   \item{\dots}{further arguments to \code{fn}, \code{grad} and
-    \code{hess}.}
+    \code{hess}.
+    Further arguments to \code{maxBHHH} are also passed to \code{maxNR}.}
 }
 \details{
-The algorithm can work with constant parameters and related changes of
+The idea of the Newton method is to approximate the function in a given
+    location with a multidimensional parabola, and use the estimated
+    maximum as the initial value for the next iteration.  Such an
+    approximation requires knowledge of both gradient and Hessian, the
+    latter of which can be quite costly to compute.  Several methods for
+    approximating Hessian exist, including BFGS and BHHH.
+
+The BHHH method
+(\code{maxNR} with argument \code{bhhhHessian = TRUE )} or \code{maxBHHH})
+is suitable only for maximizing log-likelihood functions.
+It uses information equality in order to approximate the Hessian
+of the log-likelihood function.
+Hence, the log-likelihood values and its gradients must e calculated
+by individual observations.
+The Hessian is approximated as the negative of the sum of the outer products
+of the gradients of individual observations, or, in the matrix form,
+\code{-t(gradient) \%*\% gradient = - crossprod( gradient )}.
+
+The functions \code{maxNR}, \code{maxBFGSR}, and \code{maxBHHH}
+can work with constant parameters and related changes of
 parameter values.  Constant parameters are useful if a parameter value
 is converging toward the boundary of support, or for testing.  
-
 One way is to put
-\code{activePar} to non-NULL, specifying which parameters we want to
-change.  However, parameters can also be fixed in runtime by by
+\code{fixed} to non-NULL, specifying which parameters should be treated as
+constants.
+
+However, when using \code{maxNR} or \code{maxBHHH},
+parameters can also be fixed in runtime by
 signaling with
 \code{fn}.  This may be useful if an estimation converges toward the
 edge of the parameter space possibly causing problems.  The value of
-\code{fn} may have following attributes:
+\code{fn} may have following attributes (only used by maxNR):
 \itemize{
 \item{constPar}{index vector.  Which parameters are redefined to
   constant}
@@ -100,13 +168,17 @@ values, possibly the non-constant values as well.  If the attribute
 \code{newVal} is present, the new function value need not to exceed 
 the previous one (maximization is not performed in that step).
 }
+
 \value{
   list of class "maxim" with following components:
   \item{maximum}{\code{fn} value at maximum (the last calculated value
     if not converged).}
   \item{estimate}{estimated parameter value.}
-  \item{gradient}{last gradient value which was calculated.  Should be
+  \item{gradient}{vector, last gradient value which was calculated.  Should be
     close to 0 if normal convergence.}
+  \item{gradientObs}{matrix of gradients at parameter value \code{estimate}
+      evaluated at each observation (only if \code{grad} returns a matrix
+      or \code{grad} is not specified and \code{fn} returns a vector).}
   \item{hessian}{Hessian at the maximum (the last calculated value if
     not converged).}
   \item{code}{return code:
@@ -132,7 +204,7 @@ the previous one (maximization is not performed in that step).
     \item{climb}{the movement vector to the maximum of the quadratic approximation}
     }
   }
-  \item{activePar}{logical vector, which parameters are not constants.}
+  \item{fixed}{logical vector, which parameters are constants.}
   \item{iterations}{number of iterations.}
   \item{type}{character string, type of maximization.}
   \item{constraints}{A list, describing the constrained optimization
@@ -144,13 +216,63 @@ the previous one (maximization is not performed in that step).
     }
   }
 }
-\references{Greene,  W., 2002, \emph{Advanced Econometrics}
-  Goldfeld, S. M. and Quandt, R. E., 1972,
-  \emph{Nonlinear Methods in Econometrics}.  Amsterdam: North-Holland}
-\author{Ott Toomet \email{otoomet@ut.ee}}
-\seealso{\code{\link{nlm}} for Newton-Raphson optimization,
+
+\section{Warning}{
+    No attempt is made to ensure that user-provided analytic
+    gradient/Hessian is the correct one.  However, the users are
+    recommended to use \code{\link{compareDerivatives}} function,
+    designed for this purpose.  If analytic gradient/Hessian are wrong,
+    the algorithm may not converge, or converge to a wrong point.
+
+    As the BHHH method
+    (\code{maxNR} with argument \code{bhhhHessian = TRUE )} or \code{maxBHHH})
+    uses the likelihood-specific information equality,
+    it is only suitable for maximizing log-likelihood functions!
+}
+
+\references{
+   Berndt, E., Hall, B., Hall, R. and Hausman, J. (1974):
+   Estimation and Inference in Nonlinear Structural Models,
+   \emph{Annals of Social Measurement} 3, p. 653-665.
+
+   Broyden, C.G. (1970):
+   The Convergence of a Class of Double-rank Minimization Algorithms,
+   \emph{Journal of the Institute of Mathematics and Its Applications} 6,
+   p. 76-90.
+
+   Fletcher, R. (1970):
+   A New Approach to Variable Metric Algorithms,
+   \emph{Computer Journal} 13, p. 317-322.
+
+   Goldfeld, S.M. and Quandt, R.E. (1972):
+   \emph{Nonlinear Methods in Econometrics}.  Amsterdam: North-Holland.
+
+   Goldfarb, D. (1970):
+   A Family of Variable Metric Updates Derived by Variational Means,
+   \emph{Mathematics of Computation} 24, p. 23-26.
+
+   Greene, W.H., 2008, \emph{Econometric Analysis}, 6th edition,
+   Prentice Hall.
+
+   Shanno, D.F. (1970):
+   Conditioning of Quasi-Newton Methods for Function Minimization,
+   \emph{Mathematics of Computation} 24, p. 647-656.
+}
+
+\author{Ott Toomet \email{otoomet@ut.ee}, Arne Henningsen,
+   function \code{maxBFGSR} was originally developed by Yves Croissant
+   (and placed in 'mlogit' package)}
+
+\seealso{\code{\link{maxLik}} for a general framework for maximum likelihood
+   estimation (MLE),
+   \code{\link{maxBHHH}} for maximizations using the Berndt, Hall, Hall,
+   Hausman (1974) algorithm (which is a wrapper function to \code{maxNR}),
+   \code{\link{maxBFGS}} for maximization using the BFGS, Nelder-Mead (NM),
+   and Simulated Annealing (SANN) method (based \code{\link{optim}}),
+   \code{\link{nlm}} for Newton-Raphson optimization, and
   \code{\link{optim}} for different gradient-based optimization
   methods.}
+
 \examples{
 ## ML estimation of exponential duration model:
 t <- rexp(100, 2)
@@ -158,13 +280,32 @@ loglik <- function(theta) sum(log(theta) - theta*t)
 ## Note the log-likelihood and gradient are summed over observations
 gradlik <- function(theta) sum(1/theta - t)
 hesslik <- function(theta) -100/theta^2
-## Estimate with numeric gradient and Hessian
+## Estimate with finite-difference gradient and Hessian
 a <- maxNR(loglik, start=1, print.level=2)
 summary(a)
 ## You would probably prefer 1/mean(t) instead ;-)
 ## Estimate with analytic gradient and Hessian
 a <- maxNR(loglik, gradlik, hesslik, start=1)
 summary(a)
+
+## BFGS estimation with finite-difference gradient
+a <- maxBFGSR( loglik, start=1 )
+summary(a)
+## BFGS estimation with analytic gradient
+a <- maxBFGSR( loglik, gradlik, start=1 )
+summary(a)
+
+## For the BHHH method we need likelihood values and gradients
+## of individual observations
+loglikInd <- function(theta) log(theta) - theta*t
+gradlikInd <- function(theta) 1/theta - t
+## Estimate with finite-difference gradient
+a <- maxBHHH(loglikInd, start=1, print.level=2)
+summary(a)
+## Estimate with analytic gradient
+a <- maxBHHH(loglikInd, gradlikInd, start=1)
+summary(a)
+
 ##
 ## Next, we give an example with vector argument:  Estimate the mean and
 ## variance of a random normal sample by maximum likelihood

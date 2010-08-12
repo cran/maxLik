@@ -15,12 +15,13 @@ print( cons )
 summary(cons) # result should be around (1,0)
 activePar(cons)
 # specify fixed par in different ways
-cons <- maxNR(f, start=1:2, fixed=1)
-print(summary(cons))
-cons <- maxNR(f, start=1:2, fixed=c(TRUE,FALSE))
-print(summary(cons))
-cons <- maxNR(f, start=c(a=1, b=2), fixed="a")
-print(summary(cons))
+cons2 <- maxNR(f, start=1:2, fixed=1)
+all.equal( cons, cons2 )
+cons3 <- maxNR(f, start=1:2, fixed=c(TRUE,FALSE))
+all.equal( cons, cons3 )
+cons4 <- maxNR(f, start=c(a=1, b=2), fixed="a")
+print(summary(cons4))
+all.equal( cons, cons4 )
 
 ### compareDerivatives
 set.seed( 2 )
@@ -70,24 +71,6 @@ print(stdEr(mlf))
                            # test standard errors with fixed par
 
 
-### logLik.maxLik
-set.seed( 4 )
-## ML estimation of exponential duration model:
-t <- rexp(100, 2)
-loglik <- function(theta) log(theta) - theta*t
-gradlik <- function(theta) 1/theta - t
-hesslik <- function(theta) -100/theta^2
-## Estimate with analytic gradient and hessian
-a <- maxLik(loglik, gradlik, hesslik, start=1)
-print.default( a )
-print( a )
-## print log likelihood value
-logLik( a )
-## print log likelihood value of summary object
-b <- summary( a )
-logLik( b )
-
-
 ### maxBFGS
 set.seed( 5 )
 # Maximum Likelihood estimation of the parameter of Poissonian distribution
@@ -101,12 +84,27 @@ summary( a )
 # Note also that maxLik is better suited for Maximum Likelihood
 
 
-### maxBHHH
-set.seed( 6 )
+### logLik.maxLik
+set.seed( 4 )
 ## ML estimation of exponential duration model:
 t <- rexp(100, 2)
 loglik <- function(theta) log(theta) - theta*t
 gradlik <- function(theta) 1/theta - t
+hesslik <- function(theta) -100/theta^2
+## Estimate with analytic gradient and hessian
+a <- maxLik(loglik, gradlik, hesslik, start=1)
+print.default( a )
+print( a )
+## print log likelihood value
+logLik( a )
+## compare with log likelihood value of summary object
+all.equal( logLik( a ), logLik( summary( a ) ) )
+
+
+### maxBHHH
+set.seed( 6 )
+## ML estimation of exponential duration model:
+t <- rexp(100, 2)
 ## Estimate with numeric gradient and hessian
 a <- maxBHHH(loglik, start=1, print.level=2)
 print( a )
@@ -121,9 +119,6 @@ summary(a)
 set.seed( 7 )
 ## ML estimation of exponential duration model:
 t <- rexp(100, 2)
-loglik <- function(theta) log(theta) - theta*t
-gradlik <- function(theta) 1/theta - t
-hesslik <- function(theta) -100/theta^2
 ## Estimate with numeric gradient and hessian
 a <- maxLik(loglik, start=1, print.level=2)
 print.default( a )
@@ -140,17 +135,16 @@ summary(a)
 set.seed( 8 )
 ## ML estimation of exponential duration model:
 t <- rexp(100, 2)
-loglik <- function(theta) sum(log(theta) - theta*t)
+loglikSum <- function(theta) sum(log(theta) - theta*t)
 ## Note the log-likelihood and gradient are summed over observations
-gradlik <- function(theta) sum(1/theta - t)
-hesslik <- function(theta) -100/theta^2
+gradlikSum <- function(theta) sum(1/theta - t)
 ## Estimate with numeric gradient and Hessian
-a <- maxNR(loglik, start=1, print.level=2)
+a <- maxNR(loglikSum, start=1, print.level=2)
 print( a )
 summary(a)
 ## You would probably prefer 1/mean(t) instead ;-)
 ## Estimate with analytic gradient and Hessian
-a <- maxNR(loglik, gradlik, hesslik, start=1)
+a <- maxNR(loglikSum, gradlikSum, hesslik, start=1)
 print( a )
 summary(a)
 
@@ -168,6 +162,11 @@ print( m )
 summary(m)
 maximType(m)
 
+### Test maxNR with 0 iterations.  Should perform no iterations
+### Request by Yves Croissant
+f <- function(a) exp(-(a[1] - 2)^2 - (a[2] - 1)^2)
+m0 <- maxNR(f, start=c(1.1, 2.1), iterlim=0)
+summary(m0)
 
 ### nObs
 set.seed( 10 )
@@ -249,8 +248,9 @@ print( a )
 summary(a)
 
 
-### summary.maxim
-## minimize a 2D quadratic function:
+### summary.maxim and for "gradient"/"hessian" attributes
+### Test for infinity
+## maximize a 2D quadratic function:
 f <- function(b) {
   x <- b[1]; y <- b[2];
     val <- (x - 2)^2 + (y - 3)^2
@@ -258,8 +258,7 @@ f <- function(b) {
     attr(val, "hessian") <- matrix(c(2, 0, 0, 2), 2, 2)
     val
 }
-## Note that NR finds the minimum of a quadratic function with a single
-## iteration.  Use c(0,0) as initial value.  
+## Use c(0,0) as initial value.  
 result1 <- maxNR( f, start = c(0,0) )
 print( result1 )
 summary( result1 )
@@ -268,13 +267,41 @@ result2 <- maxNR( f, start = c( 1000000, -777777))
 print( result2 )
 summary( result2 )
 
+
+### Test for "gradient"/"hessian" attributes.  A case which converges.
+hub <- function(x) {
+   v <- exp(-sum(x*x))
+   val <- v
+   attr(val, "gradient") <- -2*x*v
+   attr(val, "hessian") <- 4*(x %*% t(x))*v - diag(2*c(v, v))
+   val
+}
+summary(a <- maxNR(hub, start=c(2,1)))
+## Now test "gradient" attribute for BHHH/3-parameter probit
+N <- 1000
+loglikProbit <- function( beta) {
+   xb <- x %*% beta
+   loglik <- ifelse(y == 0,
+                    pnorm( xb, log=TRUE, lower.tail=FALSE),
+                    pnorm( xb, log.p=TRUE))
+   grad <- ifelse(y == 0,
+                  -dnorm(xb)/pnorm(xb, lower.tail=FALSE),
+                  dnorm(xb)/pnorm(xb))
+   grad <- grad*x
+   attr(loglik, "gradient") <- grad
+   loglik
+}
+x <- runif(N)
+x <- cbind(x, x - runif(N), x - runif(N))
+y <- x[,1] + 2*x[,2] - x[,3] + rnorm(N) > 0
+summary(maxLik(loglikProbit, start=c(0,0,0), method="bhhh"))
+
+
+
 ### vcov.maxLik
 set.seed( 17 )
 ## ML estimation of exponential duration model:
 t <- rexp(100, 2)
-loglik <- function(theta) log(theta) - theta*t
-gradlik <- function(theta) 1/theta - t
-hesslik <- function(theta) -100/theta^2
 ## Estimate with numeric gradient and hessian
 a <- maxLik(loglik, start=1, print.level=2)
 print.default( a )

@@ -28,7 +28,8 @@ constraints=NULL, ...)
     vector as the first argument.  Must return a square matrix.  If
     \code{NULL}, numeric gradient will be used.}
   \item{start}{numeric vector, initial value of parameters.}
-  \item{method}{maximisation method, currently either "Newton-Raphson", "BFGS",
+  \item{method}{maximisation method, currently either "Newton-Raphson",
+    "BFGS", "BFGS-YC",
     "BHHH", "SANN" or "NM" (for Nelder-Mead).  Lower-case letters and
     shortcuts (as 'nr' for Newton-Raphson) allowed.  If missing, a
     suitable method is selected automathically.}
@@ -54,7 +55,7 @@ constraints=NULL, ...)
   be considered as experimental.  In particular, the variance-covariance
   matrix is not corrected for constrained parameter space.
   }
-\author{Ott Toomet \email{otoomet@ut.ee}}
+\author{Ott Toomet \email{otoomet@ut.ee}, Arne Henningsen}
 \seealso{\code{\link{maxNR}}, \code{\link{nlm}} and \code{\link{optim}}
   for different non-linear optimisation routines.}
 \examples{

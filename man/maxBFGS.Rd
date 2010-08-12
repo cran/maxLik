@@ -6,22 +6,29 @@
 \title{BFGS, SANN and Nelder-Mead Maximization}
 \description{
   These functions are wrappers for \code{\link{optim}} where the arguments are
-  compatible with \code{\link{maxNR}}
+  compatible with \code{\link{maxNR}}.  Note that there is a
+  \code{\link{maxNR}}-based BFGS implementation \code{\link{maxBFGSR}}.
 }
 \usage{
 maxBFGS(fn, grad = NULL, hess=NULL, start, fixed = NULL,
    print.level = 0, iterlim = 200, constraints = NULL,
-   tol = 1e-08, reltol=tol, parscale=rep(1, length=length(start)), ... )
+   tol = 1e-08, reltol=tol,
+   finalHessian=TRUE,
+parscale=rep(1, length=length(start)), ... )
 
 maxSANN(fn, grad = NULL, hess = NULL, start, fixed = NULL,
    print.level = 0, iterlim = 10000, constraints = NULL,
-   tol = 1e-08, reltol=tol, cand = NULL, temp = 10, tmax = 10,
+   tol = 1e-08, reltol=tol,
+finalHessian=TRUE,
+cand = NULL, temp = 10, tmax = 10,
    parscale = rep(1, length = length(start)),
    random.seed = 123, ... )
 
 maxNM(fn, grad = NULL, hess = NULL, start, fixed = NULL,
    print.level = 0, iterlim = 500, constraints = NULL,
-   tol = 1e-08, reltol=tol, parscale = rep(1, length = length(start)),
+   tol = 1e-08, reltol=tol,
+finalHessian=TRUE,
+ parscale = rep(1, length = length(start)),
    alpha = 1, beta = 0.5, gamma = 2, ...)
 }
 
@@ -57,7 +64,16 @@ maxNM(fn, grad = NULL, hess = NULL, start, fixed = NULL,
     \code{\link{constrOptim2}}.
   }
   \item{tol, reltol}{the relative convergence tolerance (see
-    \code{\link{optim}}).  \code{tol} is for compatibility with \code{\link{maxNR}}.}
+    \code{\link{optim}}).  \code{tol} is for compatibility with
+    \code{\link{maxNR}}.}
+  \item{finalHessian}{how (and if) to calculate the final Hessian.  Either
+  \code{FALSE} (not calculate), \code{TRUE} (use analytic/numeric
+  Hessian) or \code{"bhhh"}/\code{"BHHH"} for information equality
+  approach.  The latter approach is only suitable for maximizing
+  log-likelihood function.  It requires the gradient/log-likelihood to
+  be supplied by individual observations, see \code{\link{maxBHHH}} for
+  details. 
+ }
   \item{cand}{a function used in the \code{"SANN"} algorithm
     to generate a new candidate point;
     if it is \code{NULL}, a default Gaussian Markov kernel is used
@@ -96,14 +112,17 @@ maxNM(fn, grad = NULL, hess = NULL, start, fixed = NULL,
   Object of class "maxim":
   \item{maximum}{value of \code{fn} at maximum.}
   \item{estimate}{best set of parameters found.}
-  \item{gradient}{gradient at parameter value \code{estimate}.}
+  \item{gradient}{vector, gradient at parameter value \code{estimate}.}
+  \item{gradientObs}{matrix of gradients at parameter value \code{estimate}
+      evaluated at each observation (only if \code{grad} returns a matrix
+      or \code{grad} is not specified and \code{fn} returns a vector).}
   \item{hessian}{value of Hessian at optimum.}
   \item{code}{integer. Success code, 0 is success (see
     \code{\link{optim}}).}
   \item{message}{character string giving any additional information
     returned by the optimizer, or NULL.}
-  \item{activePar}{logical vector indicating which parameters are treated
-    as free (currently all parameters).}
+  \item{fixed}{logical vector indicating which parameters are treated
+    as constants.}
   \item{iterations}{two-element integer vector giving the number of
     calls to \code{fn} and \code{gr}, respectively.
     This excludes those calls needed to
@@ -119,9 +138,10 @@ maxNM(fn, grad = NULL, hess = NULL, start, fixed = NULL,
     }
   }
 }
-\author{Ott Toomet \email{otoomet@ut.ee}}
+\author{Ott Toomet \email{otoomet@ut.ee}, Arne Henningsen}
 
-\seealso{\code{\link{optim}}, \code{\link{nlm}}, \code{\link{maxNR}}, \code{\link{maxBHHH}}.}
+\seealso{\code{\link{optim}}, \code{\link{nlm}}, \code{\link{maxNR}},
+  \code{\link{maxBHHH}}, \code{\link{maxBFGSR}}.}
 
 \examples{
 # Maximum Likelihood estimation of the parameter of Poissonian distribution

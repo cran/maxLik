@@ -39,11 +39,6 @@ sumt <- function(fn, grad=NULL, hess=NULL,
          args = names(formals(maxRoutine)), ... ) )
    }
 
-   ## the penalized objective function
-   Phi <- function(theta, ...) {
-      callWithoutMaxArgs( theta, "logLikFunc", fnOrig = fn, gradOrig = grad,
-         hessOrig = hess, ... ) - rho * penalty(theta)
-   }
    SUMTMessage <- function(code) {
       message <- switch(code,
                         "1" = "penalty close to zero",
@@ -52,23 +47,53 @@ sumt <- function(fn, grad=NULL, hess=NULL,
                         paste("Code", code))
       return(message)
    }
-   ## --------------------
+   ## the penalized objective function
+   Phi <- function(theta, ...) {
+      llVal <- callWithoutMaxArgs( theta, "logLikFunc", fnOrig = fn,
+         gradOrig = grad, hessOrig = hess, sumObs = FALSE, ... )
+      llVal <- llVal - rho * penalty( theta ) / length( llVal )
+      g <- attributes( llVal )$gradient
+      if( !is.null( g ) ) {
+         if( is.matrix( g ) ) {
+            g <- g - matrix(
+               rep( rho * gPenalty( theta ) / nrow( g ), each = nrow( g ) ),
+               nrow = nrow( g ), ncol = ncol( g ) )
+         } else {
+            g <- g - rho * gPenalty( theta )
+         }
+         attributes( llVal )$gradient <- g
+      }
+      h <- attributes( llVal )$hessian
+      if( !is.null( h ) ) {
+         attributes( llVal )$hessian <- h - rho * hessPenalty( theta )
+      }
+      return( llVal )
+   }
+   ## gradient of the penalized objective function
    if(!is.null(grad)) {
       gradPhi<- function(theta, ...) {
          g <- grad(theta, ...)
-         if(is.matrix(g))
-             g <- colSums(g)
-         g - rho*gPenalty(theta)
+         if(is.matrix(g)) {
+            g <- g - matrix(
+               rep( rho * gPenalty( theta ) / nrow( g ), each = nrow( g ) ),
+               nrow = nrow( g ), ncol = ncol( g ) )
+         } else {
+            g <- g - rho * gPenalty( theta )
+         }
+         return( g )
       }
+   } else {
+      gradPhi <- NULL
    }
-   else
-       gradPhi <- NULL
+   ## Hessian of the penalized objective function
    if(!is.null(hess)) {
-      hessPhi <- function(theta, ...) 
-         hess(theta, ...) - rho*hessPenalty(theta)
+      hessPhi <- function(theta, ...) {
+         return( hess(theta, ...) - rho*hessPenalty(theta) )
+      }
+   } else {
+      hessPhi <- NULL
    }
-   else
-       hessPhi <- NULL
+
    ##
    A <- constraints$eqA
    B <- constraints$eqB
@@ -147,8 +172,25 @@ sumt <- function(fn, grad=NULL, hess=NULL,
    }
    ## Now we replace the resulting gradient and Hessian with those,
    ## calculated on the original function
-   result$gradient <- callWithoutMaxArgs( theta, "logLikGrad", fnOrig = fn,
-      gradOrig = grad, hessOrig = hess, ... )
+   llVal <- callWithoutMaxArgs( theta, "logLikFunc", fnOrig = fn,
+      gradOrig = grad, hessOrig = hess, sumObs = FALSE, ... )
+   gradient <- attr( llVal, "gradient" )
+   if( is.null( gradient ) ) {
+      gradient <- callWithoutMaxArgs( theta, "logLikGrad", fnOrig = fn,
+         gradOrig = grad, hessOrig = hess, sumObs = FALSE, ... )
+   }
+   if( !is.null( dim( gradient ) ) ) {
+      if( nrow( gradient ) > 1 ) {
+         gradientObs <- gradient
+      }
+      gradient <- colSums( gradient )
+   } else if( length( start ) == 1 && length( gradient ) > 1 ) {
+      gradientObs <- matrix( gradient, ncol = 1 )
+      gradient <- sum( gradient )
+   }
+   result$gradient <- gradient
+   names( result$gradient ) <- names( result$estimate )
+
    result$hessian <- callWithoutMaxArgs( theta, "logLikHess", fnOrig = fn,
       gradOrig = grad, hessOrig = hess, ... )
    result$constraints <- list(type="SUMT",
@@ -157,6 +199,11 @@ sumt <- function(fn, grad=NULL, hess=NULL,
                               message=SUMTMessage(SUMTCode),
                              outer.iterations=iter
                              )
+   if( exists( "gradientObs" ) ) {
+      result$gradientObs <- gradientObs
+      colnames( result$gradientObs ) <- names( result$estimate )
+   }
+
    if( result$constraints$barrier.value > 0.001 ) {
       warning( "problem in imposing equality constraints: the constraints",
          " are not satisfied (barrier value = ",
