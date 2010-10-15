@@ -119,6 +119,15 @@ maxNRCompute <- function(fn,
          ") not equal to the no. of parameters (", nParam, ")" )
    }
    H1 <- attr( f1, "hessian" )
+   if(print.level > 3) {
+      cat("Initial Hessian value:\n")
+      print(H1)
+   }
+   if(length(H1) == 1) {
+                           # Allow the user program to return a single NA in case of out of support
+      if(is.na(H1))
+          stop("NA in the initial Hessian")
+   }
    if(any(is.na(H1[!fixed, !fixed]))) {
       stop("NA in the initial Hessian")
    }
@@ -190,10 +199,15 @@ maxNRCompute <- function(fn,
                                         # We end up in a NA or a higher value.
                                         # try smaller step
             step <- step/2
-            if(print.level > 2) {
-               cat("function value difference", f1 - f0, "-> step", step, "\n")
-            }
             start1 <- start0 - step*amount
+            if(print.level > 2) {
+               if(print.level > 3) {
+                  cat("Try new parameters:\n")
+                  print(start1)
+               }
+               cat("function value difference", f1 - f0, "-> step", step,
+                   "\n")
+            }
             f1 <- fn(start1, fixed = fixed, sumObs = TRUE,
                returnHessian = returnHessian, ...)
             ## Find out the constant parameters -- these may be other than
@@ -295,7 +309,8 @@ maxNRCompute <- function(fn,
       cat( "Function value:", f1, "\n")
    }
    names(start1) <- nimed
-   F1 <- fn( start1, fixed = fixed, sumObs = FALSE, ... )
+   F1 <- fn( start1, fixed = fixed, sumObs = FALSE,
+      returnHessian = ( finalHessian == TRUE ), ... )
    G1 <- attr( F1, "gradient" )
    if(observationGradient(G1, length(start1))) {
       gradientObs <- G1

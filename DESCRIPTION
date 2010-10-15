@@ -1,5 +1,5 @@
 Package: maxLik
-Version: 1.0-0
+Version: 1.0-2
 Date: 2010/10/15
 Title: Maximum Likelihood Estimation
 Author: Ott Toomet <otoomet@ut.ee>, Arne Henningsen
@@ -11,6 +11,6 @@ Imports: sandwich
 Description: Tools for Maximum Likelihood Estimation
 License: GPL (>= 2)
 URL: http://CRAN.R-project.org, http://www.maxLik.org
-Packaged: 2010-10-15 11:14:51 UTC; suapm095
+Packaged: 2011-10-16 16:27:20 UTC; siim
 Repository: CRAN
-Date/Publication: 2010-10-15 14:58:49
+Date/Publication: 2011-10-17 05:55:20
