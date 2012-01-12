@@ -5,6 +5,8 @@ library( maxLik )
 ## e.g. estimation of an exponential duration model
 
 # generate data
+options(digits=5)
+                           # less differences b/w different platforms
 set.seed( 4 )
 t <- rexp( 100, 2 )
 
@@ -114,6 +116,20 @@ all.equal( mlgSann, mlSann )
 # Estimate with analytic gradient and Hessian (both unused during estimation)
 mlghSann <- maxLik( loglik, gradlik, hesslik, start = 1, method = "SANN" )
 all.equal( mlghSann, mlgSann )
+
+
+## CG estimation
+# Estimate with only function values
+mlCg <- maxLik( loglik, start = 1, method = "CG" )
+print(summary( mlCg))
+
+# Estimate with analytic gradient
+mlgCg <- maxLik( loglik, gradlik, start = 1, method = "CG" )
+print(summary( mlgCg))
+
+# Estimate with analytic gradient and Hessian (not used for estimation)
+mlghCg <- maxLik( loglik, gradlik, hesslik, start = 1, method = "CG" )
+print(summary( mlghCg))
 
 
 ## test for method "estfun"
