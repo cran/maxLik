@@ -16,18 +16,28 @@ Type 'demo()' for some demos, 'help()' for on-line help, or
 'help.start()' for an HTML browser interface to help.
 Type 'q()' to quit R.
 
+> 
+> ### test numeric methods, in particular handling of unequal
+> ### function lengths
 > library(maxLik)
 Loading required package: miscTools
-> set.seed(0)
 > 
-> ## Test standard methods for "lm"
-> x <- runif(100)
-> y <- x + rnorm(100)
-> m <- lm(y ~ x)
-> print(nObs(m))
-[1] 100
-> print(stdEr(m))
-(Intercept)           x 
-  0.1942235   0.3314218 
+> f <- function(x) {
++    if(x[1] <= 0)
++        return(NA)
++                            # support of x[1] is (0, Inf)
++    return(c(log(x[1]),x[2]))
++ }
 > 
+> ng <- numericGradient(f, c(0.01,1), eps=0.1)
+Warning message:
+In numericGradient(f, c(0.01, 1), eps = 0.1) : Function value at
+-0.04  1.00
+ =
+NA
+(length 1) does not conform with the length at original value 2
+Component 1 set to NA
+> 
+> nh <- try(numericHessian(f, t0=c(0.01,1), eps=0.1))
+There were 13 warnings (use warnings() to see them)
 > 
