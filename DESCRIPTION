@@ -1,6 +1,6 @@
 Package: maxLik
-Version: 1.1-4
-Date: 2013/09/16
+Version: 1.1-8
+Date: 2013/09/17
 Title: Maximum Likelihood Estimation
 Author: Ott Toomet <otoomet@gmail.com>,
    Arne Henningsen <arne.henningsen@gmail.com>,
@@ -12,7 +12,7 @@ Description: Tools for Maximum Likelihood Estimation
 License: GPL (>= 2)
 ByteCompile: yes
 URL: http://www.maxLik.org
-Packaged: 2013-09-16 13:17:09 UTC; arne
+Packaged: 2013-09-17 20:33:36 UTC; arne
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2013-09-16 20:31:43
+Date/Publication: 2013-09-18 08:46:26
