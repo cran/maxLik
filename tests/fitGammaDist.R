@@ -8,9 +8,9 @@ some_data <- rgamma(1e4, shape = 5, scale = 2)
 
 # log-likelihood function(s)
 logLL <- function(x, X)   # per observation for maxLik
-   .Internal(dgamma(x = X, shape = exp(x[1]), scale = exp(x[2]), log = TRUE))
+   dgamma(x = X, shape = exp(x[1]), scale = exp(x[2]), log = TRUE)
 logLL_sum <- function(x, X)   # negative sum for nlm()
-   -sum(.Internal(dgamma(x = X, shape = exp(x[1]), scale = exp(x[2]), log = TRUE)))
+   -sum(dgamma(x = X, shape = exp(x[1]), scale = exp(x[2]), log = TRUE))
 
 sum(logLL(log(c(5,2)),some_data))
 logLL_sum(log(c(5,2)),some_data)
@@ -140,23 +140,23 @@ pp
 
 
 # some Hessians
--round(r_nlm$hessian,0)
-round(solve(r_nlm$hessian),6)
+-100*round(r_nlm$hessian/100,0)
+round(solve(r_nlm$hessian),5)
 
--round(r_nlmg$hessian,0)
-round(solve(r_nlmg$hessian),6)
+-100*round(r_nlmg$hessian/100,0)
+round(solve(r_nlmg$hessian),5)
 
--round(r_nlmgh$hessian,0)
-round(solve(r_nlmgh$hessian),6)
+-100*round(r_nlmgh$hessian/100,0)
+round(solve(r_nlmgh$hessian),5)
 
--round(r_bfgs$hessian,0)
-round(solve(r_bfgs$hessian),6)
+-100*round(r_bfgs$hessian/100,0)
+round(solve(r_bfgs$hessian),5)
 
-round(r_NRn$hessian,0)
-round(solve(-r_NRn$hessian),6)
+100*round(r_NRn$hessian/100,0)
+round(solve(-r_NRn$hessian),5)
 
-round(r_NRg$hessian,2)
-round(solve(-r_NRg$hessian),6)
+100*round(r_NRg$hessian/100,0)
+round(solve(-r_NRg$hessian),5)
 
 
 # standard errors
@@ -177,4 +177,4 @@ se
 # execution times
 tt <- rbind(t_nlm, t_nlmg, t_nlmgh, t_bfgs, t_bfgsM, t_bfgsMg, 
             t_bhhh, t_bhhhg, t_NRn, t_NRg, t_NRgh )
-tt
+# tt

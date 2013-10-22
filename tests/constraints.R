@@ -62,7 +62,7 @@ cat("Test for inequality constraints\n")
 A <- matrix(c(-1, 0, 0,
               0, -1, 0,
               0, 0, 1), 3, 3, byrow=TRUE)
-B <- 0.5
+B <- rep(0.5, 3)
 start <- c(0.4, 0, 0.9)
 ## analytic gradient
 a <- maxLik(logLikMix, grad=gradLikMix, hess=hessLikMix,
@@ -104,8 +104,6 @@ try( maxLik(logLikMix, gradLikMix,
             start=start, method="bhhh",
             constraints=list(eqA=A, eqB=B),
             print.level=2, SUMTRho0=1) )
-# summary(a)
-
 
 ### ------------------ Now test extra parameters for the function ----
 logLikMix2 <- function(param, rho) {
@@ -206,51 +204,65 @@ summary(a)
 ## ----------- inequality -------------
 A <- matrix(c(-1, 0,
               0,  1), 2,2, byrow=TRUE)
-B <- 1
+B <- c(1,1)
 start <- c(0.8, 0.9)
 ##
 a <- maxLik(logLikMix2, gradLikMix2,
             start=start, method="bfgs",
             constraints=list(ineqA=A, ineqB=B),
-            print.level=1, rho=0.5)
+            rho=0.5)
 summary(a)
 ##
 a <- maxLik(logLikMix2, 
             start=start, method="bfgs",
             constraints=list(ineqA=A, ineqB=B),
-            print.level=1, rho=0.5)
+            rho=0.5)
 summary(a)
 ##
 a <- maxLik(logLikMix2, gradLikMix2,
             start=start, method="nm",
             constraints=list(ineqA=A, ineqB=B),
-            print.level=1, rho=0.5)
+            rho=0.5)
 summary(a)
-
-## Now test error handling: insert wrong A and B forms
-A1 <- c(-1, 0, 0, 1)
+## ---------- test vector B for inequality  --------------
+B1 <- c(1,-2)
+a <- maxLik(logLikMix2, gradLikMix2,
+            start=c(0.5, 2.5), method="bfgs",
+            constraints=list(ineqA=A, ineqB=B1),
+            rho=0.5)
+coef(a)
+                           # components should be larger than
+                           # (-1, -2)
+## ---- Now test error handling: insert wrong A and B forms ----
+A2 <- c(-1, 0, 0, 1)
 try(maxLik(logLikMix2, gradLikMix2,
            start=start, method="bfgs",
-           constraints=list(ineqA=A1, ineqB=B),
+           constraints=list(ineqA=A2, ineqB=B),
            print.level=1, rho=0.5)
     )
                            # should explain that matrix needed
-B1 <- 1:2
+A2 <- matrix(c(-1, 0, 0, 1), 1, 4)
 try(maxLik(logLikMix2, gradLikMix2,
            start=start, method="bfgs",
-           constraints=list(ineqA=A, ineqB=B1),
-           print.level=1, rho=0.5)
-    )
-                           # should explain that scalar needed
-A1 <- matrix(c(-1, 0, 0, 1), 1, 4)
-try(maxLik(logLikMix2, gradLikMix2,
-           start=start, method="bfgs",
-           constraints=list(ineqA=A1, ineqB=B),
+           constraints=list(ineqA=A2, ineqB=B),
            print.level=1, rho=0.5)
     )
                            # should explain that wrong matrix
                            # dimension
-
+B2 <- 1:3
+try(maxLik(logLikMix2, gradLikMix2,
+           start=start, method="bfgs",
+           constraints=list(ineqA=A, ineqB=B2),
+           print.level=1, rho=0.5)
+    )
+                           # A & B do not match
+B2 <- matrix(1,2,2)
+try(maxLik(logLikMix2, gradLikMix2,
+           start=start, method="bfgs",
+           constraints=list(ineqA=A, ineqB=B2),
+           print.level=1, rho=0.5)
+    )
+                           # B must be a vector
 
 ## fixed parameters with constrained optimization, BFGS.  Thanks to Bob Loos for finding this error.
 ## Optimize 3D hat with one parameter fixed (== 2D hat).
