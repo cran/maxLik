@@ -12,7 +12,7 @@
 \usage{
 condiNumber(x, ...)
 \method{condiNumber}{default}(x, exact = FALSE, norm = FALSE,
-print.level=1, ...)
+   print.level=1, digits = getOption( "digits" ), ... )
 \method{condiNumber}{maxLik}(x, ...)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -24,7 +24,12 @@ print.level=1, ...)
     unit norm}
   \item{print.level}{numeric, positive value will output the numbers
     during the calculations.  Useful for interactive work.}
-  \item{\dots}{other arguments to different methods} 
+  \item{digits}{minimal number of significant digits to print
+      (only relevant if argument \code{print.level} is larger than zero).}
+  \item{\dots}{Further arguments to \code{condiNumber.default}
+      are currently ignored;
+      further arguments to \code{condiNumber.maxLik}
+      are passed to \code{condiNumber.default}.} 
 }
 \details{
   Statistical model often fail because of strong correlation between
