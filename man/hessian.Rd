@@ -3,9 +3,9 @@
 \alias{hessian.default}
 \title{Hessian matrix}
 \description{
-  This function extracts the Hessian of the M-estimator of 
-  statistical model.  It should be supplied by the underlying
-  optimisation algorithm, possibly using approximations.
+  This function extracts the Hessian of the objective function at optimum.
+  The Hessian information should be supplied by the underlying
+  optimization algorithm, possibly by an approximation.
 }
 \usage{
 hessian(x, \dots)
@@ -13,7 +13,7 @@ hessian(x, \dots)
 }
 
 \arguments{
-  \item{x}{a M-estimator based statistical model}
+  \item{x}{an optimization result of class \sQuote{maxim} or \sQuote{maxLik}}
   \item{\dots}{other arguments for methods}
 }
 \value{
@@ -23,14 +23,14 @@ hessian(x, \dots)
   non-singular part of the matrix.  You may also want to fix certain
   parameters (see \code{\link{activePar}}).
 }
-\author{Ott Toomet, \email{otoomet@econ.au.dk}}
-\seealso{\code{\link{maxLik}}, \code{\link{activePar}}}
+\author{Ott Toomet}
+\seealso{\code{\link{maxLik}}, \code{\link{activePar}}, \code{\link{condiNumber}}}
 \examples{
 # log-likelihood for normal density
 # a[1] - mean
 # a[2] - standard deviation
 ll <- function(a) sum(-log(a[2]) - (x - a[1])^2/(2*a[2]^2))
-x <- rnorm(1000) # sample from standard normal
+x <- rnorm(100) # sample from standard normal
 ml <- maxLik(ll, start=c(1,1))
 # ignore eventual warnings "NaNs produced in: log(x)"
 summary(ml) # result should be close to c(0,1)
@@ -41,7 +41,7 @@ sqrt(-solve(hessian(ml))) # Note: standard deviations are on the diagonal
 mlf <- maxLik(ll, start=c(1,1), activePar=c(TRUE, FALSE))
 summary(mlf) # first parameter close to 0, the second exactly 1.0
 hessian(mlf)
-# Now look at the Hessian.  Note that NA-s are in place of passive
+# Note that now NA-s are in place of passive
 # parameters.
 # now invert only the free parameter part of the Hessian
 sqrt(-solve(hessian(mlf)[activePar(mlf), activePar(mlf)]))

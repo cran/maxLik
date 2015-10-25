@@ -6,62 +6,102 @@
 
 \title{BFGS, conjugate gradient, SANN and Nelder-Mead Maximization}
 \description{
-  These functions are wrappers for \code{\link{optim}} where the arguments are
-  compatible with \code{\link{maxNR}}.  Note that there is a
-  \code{\link{maxNR}}-based BFGS implementation \code{\link{maxBFGSR}}.
+  These functions are wrappers for \code{\link{optim}}, adding
+  constrained optimization and fixed parameters.
 }
 \usage{
-maxBFGS(fn, grad = NULL, hess=NULL, start, fixed = NULL,
-   print.level = 0, iterlim = 200, constraints = NULL,
-   tol = 1e-08, reltol=tol,
+maxBFGS(fn, grad=NULL, hess=NULL, start, fixed=NULL,
+   control=NULL,
+   constraints=NULL,
    finalHessian=TRUE,
-   parscale=rep(1, length=length(start)), ... )
+   parscale=rep(1, length=length(start)),
+   ... )
 
-maxCG(fn, grad = NULL, hess = NULL, start, fixed = NULL,
-   print.level = 0, iterlim = 500, constraints = NULL,
-   tol = 1e-08, reltol=tol,
+maxCG(fn, grad=NULL, hess=NULL, start, fixed=NULL,
+   control=NULL,
+   constraints=NULL,
    finalHessian=TRUE,
-   parscale = rep(1, length = length(start)),
-   alpha = 1, beta = 0.5, gamma = 2, ...)
+   parscale=rep(1, length=length(start)), ...)
 
-maxSANN(fn, grad = NULL, hess = NULL, start, fixed = NULL,
-   print.level = 0, iterlim = 10000, constraints = NULL,
-   tol = 1e-08, reltol=tol,
+maxSANN(fn, grad=NULL, hess=NULL, start, fixed=NULL,
+   control=NULL,
+   constraints=NULL,
    finalHessian=TRUE,
-   cand = NULL, temp = 10, tmax = 10,
-   parscale = rep(1, length = length(start)),
-   random.seed = 123, ... )
+   parscale=rep(1, length=length(start)),
+   ... )
 
-maxNM(fn, grad = NULL, hess = NULL, start, fixed = NULL,
-   print.level = 0, iterlim = 500, constraints = NULL,
-   tol = 1e-08, reltol=tol,
+maxNM(fn, grad=NULL, hess=NULL, start, fixed=NULL,
+   control=NULL,
+   constraints=NULL,
    finalHessian=TRUE,
-   parscale = rep(1, length = length(start)),
-   alpha = 1, beta = 0.5, gamma = 2, ...)
+   parscale=rep(1, length=length(start)),
+   ...)
 }
 
 \arguments{
   \item{fn}{function to be maximised.  Must have the parameter vector as
     the first argument.  In order to use numeric gradient
-    and BHHH method, \code{fn} must return vector of
-    observation-specific likelihood values.  Those are summed by maxNR
-    if necessary.  If the parameters are out of range, \code{fn} should
+    and BHHH method, \code{fn} must return a vector of
+    observation-specific likelihood values.  Those are summed internally where
+    necessary.  If the parameters are out of range, \code{fn} should
     return \code{NA}.  See details for constant parameters.}
-  \item{grad}{gradient of the function.  Must have the parameter vector as
+  \item{grad}{gradient of \code{fn}.  Must have the parameter vector as
     the first argument.  If \code{NULL}, numeric
-    gradient is used (only maxBFGS uses gradient).  Gradient may return
+    gradient is used (\code{maxNM} and \code{maxSANN} do not use
+    gradient).  
+    Gradient may return
     a matrix, where columns correspond to the parameters and rows to the
     observations (useful for maxBHHH).  The columns are summed internally.}
-  \item{hess}{Hessian of the function.  Not used by any of these methods, for
+  \item{hess}{Hessian of \code{fn}.  Not used by any of these methods, included for
     compatibility with \code{\link{maxNR}}.}
-  \item{start}{initial values for the parameters.}
-  \item{fixed}{parameters that should be fixed at their starting values:
-      either a logical vector of the same length as argument \code{start},
-      a numeric (index) vector indicating the positions of the fixed parameters,
-      or a vector of character strings indicating the names of the fixed
-      parameters (parameter names are taken from argument \code{start}).}
-  \item{print.level}{a larger number prints more working information.}
-  \item{iterlim}{maximum number of iterations.}
+  \item{start}{initial values for the parameters.  If start values
+    are named, those names are also carried over to the results.}
+  \item{fixed}{parameters to be treated as constants at their
+    \code{start} values.  If present, it is treated as an index vector of
+    \code{start} parameters.}
+  \item{control}{list of control parameters or a \sQuote{MaxControl}
+    object.  If it is a list, the default values are used for the
+    parameters that are left unspecified by the user.
+    These functions accept the following parameters:
+    \describe{
+      \item{reltol}{sqrt(.Machine$double.eps), stopping
+	condition.  Relative convergence
+	tolerance: the algorithm stops if the relative improvement
+	between iterations is less than \sQuote{reltol}.
+      }
+      \item{iterlim}{integer, maximum number of iterations.
+	Default values are 200 for \sQuote{BFGS}, 500
+	(\sQuote{CG} and \sQuote{NM}), and 10000 (\sQuote{SANN}).
+	Note that
+	\sQuote{iteration} may mean different things for different
+	optimizers.
+      }
+      \item{printLevel}{integer, larger number prints more working
+	information.  Default 0, no information.
+      }
+      \item{nm_alpha}{1, Nelder-Mead simplex method reflection
+	coefficient (see Nelder & Mead, 1965)
+      }
+      \item{nm_beta}{0.5, Nelder-Mead controction coefficient}
+      \item{nm_gamma}{2, Nelder-Mead expansion coefficient}
+      % SANN
+      \item{sann_cand}{\code{NULL} or a function for \code{"SANN"} algorithm
+	to generate a new candidate point;
+	if \code{NULL}, Gaussian Markov kernel is used
+	(see argument \code{gr} of \code{\link{optim}}).}
+      \item{sann_temp}{10, starting temperature
+	for the \dQuote{SANN} cooling schedule.  See \code{\link{optim}}.}
+      \item{sann_tmax}{10, number of function evaluations at each temperature for
+	the \dQuote{SANN} optimizer.  See \code{\link{optim}}.}
+      \item{sann_randomSeed}{123, integer to seed random numbers to
+	ensure replicability of \dQuote{SANN} optimization and preserve
+	\code{R} random numbers.  Use
+	options like \code{sann_randomSeed=Sys.time()} or
+	\code{sann_randomSeed=sample(100,1)} if you want stochastic
+	results.
+	}
+      }
+    }
   \item{constraints}{either \code{NULL} for unconstrained optimization
     or a list with two components.  The components may be either
     \code{eqA} and \code{eqB} for equality-constrained optimization
@@ -76,9 +116,6 @@ maxNM(fn, grad = NULL, hess = NULL, start, fixed = NULL,
     to \code{\link{sumt}}, the inequality-constrained case to
     \code{\link{constrOptim2}}.
   }
-  \item{tol, reltol}{the relative convergence tolerance (see
-    \code{\link{optim}}).  \code{tol} is for compatibility with
-    \code{\link{maxNR}}.}
   \item{finalHessian}{how (and if) to calculate the final Hessian.  Either
   \code{FALSE} (not calculate), \code{TRUE} (use analytic/numeric
   Hessian) or \code{"bhhh"}/\code{"BHHH"} for information equality
@@ -87,36 +124,24 @@ maxNM(fn, grad = NULL, hess = NULL, start, fixed = NULL,
   be supplied by individual observations, see \code{\link{maxBHHH}} for
   details. 
  }
-  \item{cand}{a function used in the \code{"SANN"} algorithm
-    to generate a new candidate point;
-    if it is \code{NULL}, a default Gaussian Markov kernel is used
-    (see argument \code{gr} of \code{\link{optim}}).}
-  \item{temp}{controls the '"SANN"' method. It is the starting
-          temperature for the cooling schedule. Defaults to '10'.}
-  \item{tmax}{is the number of function evaluations at each temperature
-          for the '"SANN"' method. Defaults to '10'. (see
-    \code{\link{optim}})}
-  \item{random.seed}{an integer used to seed R's random number generator.
-    This is to ensure replicability when the \sQuote{Simulated Annealing}
-    method is used. Defaults to 123.}
   \item{parscale}{A vector of scaling values for the parameters.
           Optimization is performed on 'par/parscale' and these should
           be comparable in the sense that a unit change in any element
           produces about a unit change in the scaled value. (see
     \code{\link{optim}})}
-  \item{alpha, beta, gamma}{Scaling parameters for the
-          '"Nelder-Mead"' method. 'alpha' is the reflection factor
-          (default 1.0), 'beta' the contraction factor (0.5) and
-          'gamma' the expansion factor (2.0). (see
-    \code{\link{optim}})}
   \item{\dots}{further arguments for \code{fn} and \code{grad}.}
 }
 
 \details{
+  In order to provide a consistent interface, all these functions also
+  accept arguments that other optimizers use.  For instance,
+  \code{maxNM} accepts the \sQuote{grad} argument despite being a
+  gradient-less method.
+  
    The \sQuote{state} (or \sQuote{seed}) of R's random number generator
    is saved at the beginning of the \code{maxSANN} function
    and restored at the end of this function
-   so that this function does \emph{not} affect the generation of random numbers
+   so this function does \emph{not} affect the generation of random numbers
    although the random seed is set to argument \code{random.seed}
    and the \sQuote{SANN} algorithm uses random numbers.
 }
@@ -124,7 +149,7 @@ maxNM(fn, grad = NULL, hess = NULL, start, fixed = NULL,
 \value{
   Object of class "maxim":
   \item{maximum}{value of \code{fn} at maximum.}
-  \item{estimate}{best set of parameters found.}
+  \item{estimate}{best parameter vector found.}
   \item{gradient}{vector, gradient at parameter value \code{estimate}.}
   \item{gradientObs}{matrix of gradients at parameter value \code{estimate}
       evaluated at each observation (only if \code{grad} returns a matrix
@@ -144,20 +169,28 @@ maxNM(fn, grad = NULL, hess = NULL, start, fixed = NULL,
   \item{type}{character string "BFGS maximisation".}
   \item{constraints}{A list, describing the constrained optimization
     (\code{NULL} if unconstrained).  Includes the following components:
-    \itemize{
+    \describe{
       \item{type}{type of constrained optimization}
       \item{outer.iterations}{number of iterations in the constraints step}
       \item{barrier.value}{value of the barrier function}
     }
   }
+  \item{control}{the optimization control parameters in the form of a
+  \code{\link[maxLik:MaxControl-class]{MaxControl}} object.}
 }
-\author{Ott Toomet \email{otoomet@ut.ee}, Arne Henningsen}
+\author{Ott Toomet, Arne Henningsen}
 
 \seealso{\code{\link{optim}}, \code{\link{nlm}}, \code{\link{maxNR}},
-  \code{\link{maxBHHH}}, \code{\link{maxBFGSR}}.}
+  \code{\link{maxBHHH}}, \code{\link{maxBFGSR}} for a
+  \code{\link{maxNR}}-based BFGS implementation.}
+
+\references{
+  Nelder, J. A. & Mead, R. A, Simplex Method for Function
+  Minimization, The Computer Journal, 1965, 7, 308-313
+}
 
 \examples{
-# Maximum Likelihood estimation of the parameter of Poissonian distribution
+# Maximum Likelihood estimation of Poissonian distribution
 n <- rpois(100, 3)
 loglik <- function(l) n*log(l) - l - lfactorial(n)
 # we use numeric gradient
@@ -171,13 +204,13 @@ f <- function(theta) {
   x <- theta[1]
   y <- theta[2]
   exp(-(x^2 + y^2))
-  ## Note: you may want to use exp(- theta \%*\% theta) instead ;-)
+  ## you may want to use exp(- theta \%*\% theta) instead
 }
 ## use constraints: x + y >= 1
 A <- matrix(c(1, 1), 1, 2)
 B <- -1
 res <- maxNM(f, start=c(1,1), constraints=list(ineqA=A, ineqB=B),
-print.level=1)
+control=list(printLevel=1))
 print(summary(res))
 }
 \keyword{optimize}

@@ -9,7 +9,7 @@ logLikMix <- function(param) {
    mu1 <- param[2]
    mu2 <- param[3]
    ll <- log(rho*dnorm(x - mu1) + (1 - rho)*dnorm(x - mu2))
-#   ll <- sum(ll)
+   ll <- sum(ll)
    ll
 }
 
@@ -26,7 +26,35 @@ gradLikMix <- function(param) {
    g[,1] <- (f1 - f2)/L
    g[,2] <- rho*(x - mu1)*f1/L
    g[,3] <- (1 - rho)*(x - mu2)*f2/L
-#   colSums(g)
+   colSums(g)
+   g
+}
+
+logLikMixInd <- function(param) {
+   rho <- param[1]
+   if(rho < 0 || rho > 1)
+       return(NA)
+   mu1 <- param[2]
+   mu2 <- param[3]
+   ll <- log(rho*dnorm(x - mu1) + (1 - rho)*dnorm(x - mu2))
+   ll <- sum(ll)
+   ll
+}
+
+gradLikMixInd <- function(param) {
+   rho <- param[1]
+   if(rho < 0 || rho > 1)
+       return(NA)
+   mu1 <- param[2]
+   mu2 <- param[3]
+   f1 <- dnorm(x - mu1)
+   f2 <- dnorm(x - mu2)
+   L <- rho*f1 + (1 - rho)*f2
+   g <- matrix(0, length(x), 3)
+   g[,1] <- (f1 - f2)/L
+   g[,2] <- rho*(x - mu1)*f1/L
+   g[,3] <- (1 - rho)*(x - mu2)*f2/L
+   colSums(g)
    g
 }
 
@@ -55,57 +83,80 @@ hessLikMix <- function(param) {
 library(maxLik)
 ## mixed normal
 set.seed(1)
-x <- c(rnorm(1000, mean=-1), rnorm(1000, mean=1))
+N <- 100
+x <- c(rnorm(N, mean=-1), rnorm(N, mean=1))
 
-cat("Test for inequality constraints\n")
+## ---------- INEQUALITY CONSTRAINTS -----------
+## First test inequality constraints, numeric/analytical gradients
 ## Inequality constraints: x + y + z < 0.5
 A <- matrix(c(-1, 0, 0,
               0, -1, 0,
               0, 0, 1), 3, 3, byrow=TRUE)
 B <- rep(0.5, 3)
 start <- c(0.4, 0, 0.9)
+ineqCon <- list(ineqA=A, ineqB=B)
 ## analytic gradient
+cat("Inequality constraints, analytic gradient & Hessian\n")
 a <- maxLik(logLikMix, grad=gradLikMix, hess=hessLikMix,
             start=start,
-            constraints=list(ineqA=A, ineqB=B),
-            print.level=1)
-print( summary( a ), digits = 2 )
+            constraints=ineqCon)
+print(coef(a), digits=3)
 ## No analytic gradient
+cat("Inequality constraints, numeric gradient & Hessian\n")
 a <- maxLik(logLikMix, 
             start=start,
-            constraints=list(ineqA=A, ineqB=B),
-            print.level=1)
-print( summary( a ), digits = 2 )
-## No analytic gradient, BFGS
-a <- maxLik(logLikMix, 
-            start=start,
-            method="bfgs",
-            constraints=list(ineqA=A, ineqB=B),
-            print.level=1)
-print( summary( a ), digits = 2 )
-## ----
-cat("Test for equality constraints\n")
+            constraints=ineqCon)
+print(coef(a), digits=3)
+## NR method with inequality constraints
+try( maxLik(logLikMix, start = start, constraints = ineqCon, method = "NR" ) )
+
+## BHHH method with inequality constraints
+try( maxLik(logLikMix, start = start, constraints = ineqCon, method = "BHHH" ) )
+
+
+## ---------- EQUALITY CONSTRAINTS -----------------
+cat("Test for equality constraints y + 2z = 0\n")
 A <- matrix(c(0, 1, 2), 1, 3)
 B <- 0
+eqCon <- list( eqA = A, eqB = B )
+## default, numeric gradient
+mlEq <- maxLik(logLikMix, start = start, constraints = eqCon )
+print(summary(mlEq))
+## default, individual likelihood
+mlEqInd <- maxLik(logLikMixInd, start = start, constraints = eqCon )
+all.equal(coef(mlEq), coef(mlEqInd))
+all.equal(stdEr(mlEq), stdEr(mlEqInd))
 ## default, analytic gradient
-a <- maxLik(logLikMix, grad=gradLikMix, hess=hessLikMix,
-            start=start,
-            constraints=list(eqA=A, eqB=B),
-            print.level=1)
-print( summary( a ), digits = 2 )
+mlEqG <- maxLik(logLikMix, grad=gradLikMix,
+                  start = start, constraints = eqCon )
+all.equal(coef(mlEq), coef(mlEqG), tolerance=1e-6)
+## default, analytic gradient, individual likelihood
+mlEqGInd <- maxLik(logLikMixInd, grad=gradLikMixInd,
+                     start = start, constraints = eqCon )
+all.equal(coef(mlEqG), coef(mlEqGInd), tolerance=1e-6)
+all.equal(stdEr(mlEqGInd), stdEr(mlEqGInd), tolerance=1e-6)
+## default, analytic Hessian
+mlEqH <- maxLik(logLikMix, grad=gradLikMix, hess=hessLikMix,
+                  start=start,
+                  constraints=eqCon)
+all.equal(coef(mlEqG), coef(mlEqH), toleranec=1e-6)
+all.equal(stdEr(mlEqG), stdEr(mlEqH))
+
+
 ## BFGS, numeric gradient
 a <- maxLik(logLikMix, 
             start=start, method="bfgs",
-            constraints=list(eqA=A, eqB=B),
-            print.level=2, SUMTRho0=1)
-print( summary( a ), digits = 2 )
+            constraints=eqCon,
+            SUMTRho0=1)
+print(coef(a))
 ## BHHH, analytic gradient (numeric does not converge?)
 try( maxLik(logLikMix, gradLikMix,
             start=start, method="bhhh",
-            constraints=list(eqA=A, eqB=B),
-            print.level=2, SUMTRho0=1) )
+            constraints=eqCon,
+            SUMTRho0=1) )
 
-### ------------------ Now test extra parameters for the function ----
+
+### ------------------ Now test additional parameters for the function ----
 logLikMix2 <- function(param, rho) {
    mu1 <- param[1]
    mu2 <- param[2]
@@ -143,74 +194,83 @@ hessLikMix2 <- function(param, rho) {
    h
 }
 
-## ----------
+## ---------- Equality constraints & extra parameters ------------
 A <- matrix(c(1, 2), 1, 2)
 B <- 0
 start <- c(0, 1)
-## nr, numeric gradient
+## We run only a few iterations as we want to test correct handling
+## of parameters, not the final value.  We also avoid any
+## debug information
+iterlim <- 3
+cat("Test for extra parameters for the function\n")
+## NR, numeric gradient
+cat("Newton-Raphson, numeric gradient\n")
 a <- maxLik(logLikMix2,
             start=start, method="nr",
             constraints=list(eqA=A, eqB=B),
-            print.level=1, SUMTRho0=1, rho=0.5)
-print( summary( a ), digits = 2 )
-## nr, numeric hessian
+            iterlim=iterlim, SUMTRho0=1, rho=0.5)
+print(coef(a))
+## NR, numeric hessian
 a <- maxLik(logLikMix2, gradLikMix2, 
             start=start, method="nr",
             constraints=list(eqA=A, eqB=B),
-            print.level=1, SUMTRho0=1, rho=0.5)
-print( summary( a ), digits = 2 )
+            iterlim=iterlim, SUMTRho0=1, rho=0.5)
+print(coef(a))
 ## nr, analytic hessian
 a <- maxLik(logLikMix2, gradLikMix2, hessLikMix2,
             start=start, method="nr",
             constraints=list(eqA=A, eqB=B),
-            print.level=1, SUMTRho0=1, rho=0.5)
-print( summary( a ), digits = 2 )
+            iterlim=iterlim, SUMTRho0=1, rho=0.5)
+print(coef(a))
 ## BHHH
+cat("BHHH, analytic gradient, numeric Hessian\n")
 a <- maxLik(logLikMix2, gradLikMix2, 
             start=start, method="bhhh",
             constraints=list(eqA=A, eqB=B),
-            print.level=1, SUMTRho0=1, rho=0.5)
-print( summary( a ), digits = 2 )
+            iterlim=iterlim, SUMTRho0=1, rho=0.5)
+print(coef(a))
 ## BHHH, analytic
 a <- maxLik(logLikMix2, gradLikMix2, 
             start=start, method="bhhh",
             constraints=list(eqA=A, eqB=B),
-            print.level=1, SUMTRho0=1, rho=0.5)
-print( summary( a ), digits = 2 )
+            iterlim=iterlim, SUMTRho0=1, rho=0.5)
+print(coef(a))
 ## bfgs, no analytic gradient
 a <- maxLik(logLikMix2, 
             start=start, method="bfgs",
             constraints=list(eqA=A, eqB=B),
-            print.level=2, SUMTRho0=1, rho=0.5)
-print( summary( a ), digits = 2 )
+            iterlim=iterlim, SUMTRho0=1, rho=0.5)
+print(coef(a))
 ## bfgs, analytic gradient
 a <- maxLik(logLikMix2, 
             start=start, method="bfgs",
             constraints=list(eqA=A, eqB=B),
-            print.level=2, SUMTRho0=1, rho=0.5)
-print( summary( a ), digits = 2 )
+            iterlim=iterlim, SUMTRho0=1, rho=0.5)
+print(coef(a))
 ## SANN, analytic gradient
 a <- maxLik(logLikMix2, gradLikMix2,
             start=start, method="SANN",
             constraints=list(eqA=A, eqB=B),
-            print.level=1, SUMTRho0=1, rho=0.5)
-print( summary( a ), digits = 2 )
+            iterlim=iterlim, SUMTRho0=1, rho=0.5)
+print(coef(a))
 ## NM, numeric
 a <- maxLik(logLikMix2, 
             start=start, method="nm",
             constraints=list(eqA=A, eqB=B),
-            print.level=1, SUMTRho0=1, rho=0.5)
-print( summary( a ), digits = 2 )
+            iterlim=iterlim, SUMTRho0=1, rho=0.5)
+print(coef(a))
 f <- function(theta) exp(-theta %*% theta)
 ## NR, multiple constraints
 A <- matrix(c(1, 0, 1,
               1, 1, 0), 2, 3, byrow=TRUE)
 B <- c(-1, -1)
+cat("NR, multiple constraints\n")
 a <- maxNR(f, start=c(1,1.1,2), constraints=list(eqA=A, eqB=B))
-coef(a)
+print(coef(a))
 ## Error handling for equality constraints
 A <- matrix(c(1, 1), 1, 2)
 B <- -1
+cat("Error handling: ncol(A) != lengths(start)\n")
 try(a <- maxNR(f, start=c(1, 2, 3), constraints=list(eqA=A, eqB=B)))
                            # ncol(A) != length(start)
 A <- matrix(c(1, 1), 1, 2)
@@ -218,7 +278,7 @@ B <- c(-1, 2)
 try(a <- maxNR(f, start=c(1, 2), constraints=list(eqA=A, eqB=B)))
                            # nrow(A) != nrow(B)
 ##                           
-## -------------- inequality constraints ----------------
+## -------------- inequality constraints & extra paramters ----------------
 ##
 A <- matrix(c(-1, 0,
               0,  1), 2,2, byrow=TRUE)
@@ -251,7 +311,10 @@ a <- maxLik(logLikMix2, gradLikMix2,
 coef(a)
                            # components should be larger than
                            # (-1, -2)
-## ---- Now test error handling: insert wrong A and B forms ----
+
+##
+## ----  ERROR HANDLING: insert wrong A and B forms ----
+##
 A2 <- c(-1, 0, 0, 1)
 try(maxLik(logLikMix2, gradLikMix2,
            start=start, method="bfgs",
@@ -274,6 +337,7 @@ try(maxLik(logLikMix2, gradLikMix2,
            print.level=1, rho=0.5)
     )
                            # A & B do not match
+cat("A & B do not match\n")
 B2 <- matrix(1,2,2)
 try(maxLik(logLikMix2, gradLikMix2,
            start=start, method="bfgs",
@@ -282,9 +346,11 @@ try(maxLik(logLikMix2, gradLikMix2,
     )
                            # B must be a vector
 
-## fixed parameters with constrained optimization, BFGS.  Thanks to Bob Loos for finding this error.
+## ----  fixed parameters with constrained optimization -----
+## Thanks to Bob Loos for finding this error.
 ## Optimize 3D hat with one parameter fixed (== 2D hat).
 ## Add an equality constraint on that
+cat("Constraints + fixed parameters\n")
 hat3 <- function(param) {
    ## Hat function.  Hessian negative definite if sqrt(x^2 + y^2) < 0.5
    x <- param[1]
@@ -292,11 +358,11 @@ hat3 <- function(param) {
    z <- param[3]
    exp(-x^2-y^2-z^2)
 }
-library(maxLik)
 sv <- c(1,1,1)
 ## constraints: x + y + z >= 2.5
-A <- matrix(c(1,1,1), 1, 3)
+A <- matrix(c(x=1,y=1,z=1), 1, 3)
 B <- -2.5
 constraints <- list(ineqA=A, ineqB=B)
-res <- maxBFGS(hat3, start=sv, constraints=constraints, fixed=3)
-summary(res)
+res <- maxBFGS(hat3, start=sv, constraints=constraints, fixed=3,
+               iterlim=3)
+print(summary(res))

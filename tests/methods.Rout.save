@@ -1,7 +1,7 @@
 
-R version 3.0.1 (2013-05-16) -- "Good Sport"
-Copyright (C) 2013 The R Foundation for Statistical Computing
-Platform: x86_64-pc-linux-gnu (64-bit)
+R version 3.2.2 (2015-08-14) -- "Fire Safety"
+Copyright (C) 2015 The R Foundation for Statistical Computing
+Platform: x86_64-redhat-linux-gnu (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
@@ -26,16 +26,92 @@ https://r-forge.r-project.org/projects/maxlik/
 > set.seed(0)
 > 
 > ## Test standard methods for "lm"
-> x <- runif(100)
-> y <- x + rnorm(100)
+> x <- runif(20)
+> y <- x + rnorm(20)
 > m <- lm(y ~ x)
 > print(nObs(m))
-[1] 100
+[1] 20
 > print(stdEr(m))
 (Intercept)           x 
-  0.1942235   0.3314218 
+  0.3578623   0.5687071 
 > 
+> ## Test maxControl methods:
+> set.seed(9)
+> x <- rnorm(20)
+> ll <- function(x) dnorm(x, log=TRUE)
+> for(method in c("NR", "BFGS", "BFGSR")) {
++    cat("-- method", method, "--\n")
++    m <- maxLik(ll, start=0, method=method, control=list(iterlim=1))
++    cat("MaxControl structure:\n")
++    show(maxControl(m))
++ }
+-- method NR --
+MaxControl structure:
+A 'MaxControl' object with slots:
+tol = 1e-08 
+reltol = 1.490116e-08 
+gradtol = 1e-06 
+steptol = 1e-10 
+lambdatol = 1e-06 
+qrtol = 1e-10 
+qac = stephalving 
+marquardt_lambda0 = 0.01 
+marquardt_lambdaStep = 2 
+marquardt_maxLambda = 1e+12 
+nm_alpha = 1 
+nm_beta = 0.5 
+nm_gamma = 2 
+sann_cand = <default Gaussian Markov kernel>
+sann_temp = 10 
+sann_tmax = 10 
+sann_randomSeed = 123 
+iterlim = 1 
+printLevel = 0 
+-- method BFGS --
+MaxControl structure:
+A 'MaxControl' object with slots:
+tol = 1e-08 
+reltol = 1.490116e-08 
+gradtol = 1e-06 
+steptol = 1e-10 
+lambdatol = 1e-06 
+qrtol = 1e-10 
+qac = stephalving 
+marquardt_lambda0 = 0.01 
+marquardt_lambdaStep = 2 
+marquardt_maxLambda = 1e+12 
+nm_alpha = 1 
+nm_beta = 0.5 
+nm_gamma = 2 
+sann_cand = <default Gaussian Markov kernel>
+sann_temp = 10 
+sann_tmax = 10 
+sann_randomSeed = 123 
+iterlim = 1 
+printLevel = 0 
+-- method BFGSR --
+MaxControl structure:
+A 'MaxControl' object with slots:
+tol = 1e-08 
+reltol = 1.490116e-08 
+gradtol = 1e-06 
+steptol = 1e-10 
+lambdatol = 1e-06 
+qrtol = 1e-10 
+qac = stephalving 
+marquardt_lambda0 = 0.01 
+marquardt_lambdaStep = 2 
+marquardt_maxLambda = 1e+12 
+nm_alpha = 1 
+nm_beta = 0.5 
+nm_gamma = 2 
+sann_cand = <default Gaussian Markov kernel>
+sann_temp = 10 
+sann_tmax = 10 
+sann_randomSeed = 123 
+iterlim = 1 
+printLevel = 0 
 > 
 > proc.time()
    user  system elapsed 
-  0.164   0.036   0.189 
+  0.450   0.032   0.474 

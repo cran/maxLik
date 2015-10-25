@@ -1,14 +1,10 @@
-maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
-                  tol=1e-8, reltol=sqrt(.Machine$double.eps),
-                  gradtol=1e-6, steptol=1e-10,
-                  lambdatol=1e-6,
-                  qrtol=1e-10,
-                  iterlim=150,
+maxNR <- function(fn, grad=NULL, hess=NULL, start, 
                   constraints=NULL,
                   finalHessian=TRUE,
                   bhhhHessian=FALSE,
                   fixed=NULL,
                   activePar=NULL,
+                  control=NULL,
                   ...) {
    ## Newton-Raphson maximisation
    ## Parameters:
@@ -23,14 +19,11 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
    ## hess        - hessian function (numeric used if missing)
    ## start       - initial parameter vector (eventually w/names)
    ## steptol     - minimum step size
-   ## lambdatol   - max lowest eigenvalue when forcing pos. definite H
+   ## lambdaStep    how much Hessian corrector lambda is changed between
+   ##               two lambda trials
+   ##               (nu in Marquardt (1963, p 438)
    ## qrtol       - tolerance for qr decomposition
    ## ...         - extra arguments for fn()
-   ## The stopping criteria
-   ## tol         - maximum allowed absolute difference between sequential values
-   ## reltol      - maximum allowed reltive difference (stops if < reltol*(abs(fn) + reltol)
-   ## gradtol     - maximum allowed norm of gradient vector
-   ## iterlim     - maximum # of iterations
    ## finalHessian  include final Hessian?  As computing final hessian does not carry any extra penalty for NR method, this option is
    ##               mostly for compatibility reasons with other maxXXX functions.
    ##               TRUE/something else  include
@@ -61,10 +54,24 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
    ## activePar   logical vector, which parameters were treated as free (resp fixed)
    ## iterations  number of iterations
    ## type        "Newton-Raphson maximisation"
-
-   argNames <- c( "fn", "grad", "hess", "start", "print.level",
-      "tol", "reltol", "gradtol", "steptol", "lambdatol", "qrtol",
-      "iterlim", "activePar", "fixed" )
+   ##
+   ## ------------------------------
+   ## Add parameters from ... to control
+   if(!inherits(control, "MaxControl")) {
+      mControl <- addControlList(maxControl(), control)
+   }
+   else {
+      mControl <- control
+   }
+   mControl <- maxControl(mControl, ...)
+   ##
+   argNames <- c(c("fn", "grad", "hess", "start",
+                   "activePar", "fixed", "control"),
+                 openParam(mControl))
+                           # Here we allow to submit all parameters outside of the
+                           # 'control' list.  May eventually include only a
+                           # subset here
+   ##
    checkFuncArgs( fn, argNames, "fn", "maxNR" )
    if( !is.null( grad ) ) {
       checkFuncArgs( grad, argNames, "grad", "maxNR" )
@@ -76,43 +83,38 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
    ## establish the active parameters.  Internally, we just use 'activePar'
    fixed <- prepareFixed( start = start, activePar = activePar,
       fixed = fixed )
-
+   ## chop off the control args from ... and forward the new ...
+   dddot <- list(...)
+   dddot <- dddot[!(names(dddot) %in% openParam(mControl))]
+   cl <- list(start=start,
+              finalHessian=finalHessian,
+              bhhhHessian=bhhhHessian,
+              fixed=fixed,
+              control=mControl)
+   if(length(dddot) > 0) {
+      cl <- c(cl, dddot)
+   }
+   ##
    if(is.null(constraints)) {
-
-       result <- maxNRCompute(fn=logLikAttr,
-                              fnOrig = fn, gradOrig = grad, hessOrig = hess,
-                              start=start,
-                              print.level=print.level,
-                              tol=tol, reltol=reltol,
-                              gradtol=gradtol, steptol=steptol,
-                              lambdatol=lambdatol,
-                              qrtol=qrtol,
-                              finalHessian=finalHessian,
-                              bhhhHessian=bhhhHessian,
-                              iterlim=iterlim,
-                              fixed=fixed,
-                              ...)
+      ## call maxNRCompute with the modified ... list
+      cl <- c(quote(maxNRCompute),
+              fn=logLikAttr,
+              fnOrig = fn, gradOrig = grad, hessOrig = hess,
+              cl)
+      result <- eval(as.call(cl))
    } else {
       if(identical(names(constraints), c("ineqA", "ineqB"))) {
          stop("Inequality constraints not implemented for maxNR")
       } else if(identical(names(constraints), c("eqA", "eqB"))) {
                            # equality constraints: A %*% beta + B = 0
-         result <- sumt(fn=fn, grad=grad, hess=hess,
-                        start=start,
-                        maxRoutine=maxNR,
-                        constraints=constraints,
-                        print.level=print.level,
-                        tol=tol, reltol=reltol,
-                        gradtol=gradtol, steptol=steptol,
-                        lambdatol=lambdatol,
-                        qrtol=qrtol,
-                        finalHessian=finalHessian,
-                        bhhhHessian=bhhhHessian,
-                        iterlim=iterlim,
-                        fixed=fixed,
-                        ...) 
+         cl <- c(quote(sumt),
+                 fn=fn, grad=grad, hess=hess,
+                 maxRoutine=maxNR,
+                 constraints=list(constraints),
+                 cl)
+         result <- eval(as.call(cl))
       } else {
-         stop("maxBFGS only supports the following constraints:\n",
+         stop("maxNR only supports the following constraints:\n",
               "constraints=list(ineqA, ineqB)\n",
               "\tfor A %*% beta + B >= 0 linear inequality constraints\n",
               "current constraints:",
@@ -121,3 +123,4 @@ maxNR <- function(fn, grad=NULL, hess=NULL, start, print.level=0,
    }
    return( result )
 }
+

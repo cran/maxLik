@@ -15,20 +15,19 @@
    \item{\dots}{further arguments (currently ignored).}
 }
 \value{
-   Matrix of gradients of the log-likelihood function
+   Matrix of log-likelihood gradients
    at the estimated parameter value
-   evaluated at each observation
+   evaluated at each observation.  Observations in rows, parameters in columns.
 }
 \section{Warnings}{
    The \pkg{sandwich} package must be loaded before this method
    can be used.
 
-   This method works only if \code{\link{maxLik}} was called 
-   with argument \code{grad} equal to a gradient function or
-   (if no gradient function is specified)
-   argument \code{logLik} equal to a log-likelihood function
-   that return the gradients or log-likelihood values, respectively,
-   for each observation.
+   This method works only if the observaton-specific gradient information
+   was available for the estimation.  This is the case of the
+   observation-specific gradient was supplied (see the \code{grad}
+   argument for \code{\link{maxLik}}), or the log-likelihood function
+   returns a vector of observation-specific values.
 }
 \author{
    Arne Henningsen
@@ -46,13 +45,13 @@ a <- maxLik(loglik, start=1 )
 
 # Extract the gradients evaluated at each observation
 library( sandwich )
-estfun( a )
+head(estfun( a ), 10)
 
-## Estimate with analytic gradient
+## Estimate with analytic gradient.
+## Note: it returns a vector
 gradlik <- function(theta) 1/theta - t
 b <- maxLik(loglik, gradlik, start=1)
-estfun( b )
-all.equal( c( estfun( b ) ), gradlik( coef( b ) ) )
+head(estfun( b ), 10)
 }
 
 \keyword{methods}
