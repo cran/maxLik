@@ -1,6 +1,6 @@
-4c9dd65972d9c459d900ae1249928ca4 *DESCRIPTION
+4e62307c5bbb7c6e67535e75405bf6f7 *DESCRIPTION
 521af5143387e0950efbc19ed922a253 *NAMESPACE
-7e29d346ee1f7e84138a6afb39d77fd2 *NEWS
+beb0c641887b6cc4f443ccaffb3fc795 *NEWS
 07512e0403e60dbe4c310f66880b4fb0 *R/05-classes.R
 6c08c9f4de9848eea7c1969e76dec023 *R/10-MaxControl_class.R
 a9f1662e6dabd302ab25fafb6fead56c *R/20-maxControl.R
@@ -33,9 +33,9 @@ fe5933fbf427415757cac7cccc7ed277 *R/maxBHHH.R
 dc26c765189aab53893ef20871587498 *R/maxCG.R
 fbd13bdfa6f2dc09a1a22bd6ee8569ba *R/maxLik.R
 b71d12473ef6a49f903b66a2aa2fb8b1 *R/maxNM.R
-f2453b70d8928952e5fa1b7d68184f24 *R/maxNR.R
-0370058f0c79a086530cc5a84070e3c9 *R/maxNRCompute.R
-74c95b8906c5ba2b8f3419b71867be43 *R/maxOptim.R
+5a9270c18023b75b7013132ba2f7567c *R/maxNR.R
+906d610dbe6c992237302fdb6f937b50 *R/maxNRCompute.R
+6e3b7576a01483de0469e8929a80a5a7 *R/maxOptim.R
 63c770407939aefb4bfd99529cf92517 *R/maxSANN.R
 83523ce13d0157c4fabfc58ffc40786d *R/maximMessage.R
 999df96b4d40ca70de26151b9f04d63e *R/maximType.R
@@ -53,7 +53,7 @@ f681ec2a71708e712ea0c3841ecc9711 *R/print.maxLik.R
 0ad6b3077e2e22603a12300892089655 *R/showMaxControl.R
 cf2ce81e76ee9b2ddbfffa06307ff28f *R/stdEr.maxLik.R
 131c1768155ac15fea7db3101dea58f5 *R/sumGradients.R
-81467a028cbaace748d13a8f920a7411 *R/summary.maxLik.R
+d9f1bc9e14143400506a5128940511c2 *R/summary.maxLik.R
 fcef0ef389f6eb9b0edbf08f815a1e3b *R/summary.maxim.R
 e6734c7b9e086764cd181d3213d668ce *R/sumt.R
 7f8d32f62e006396f5dab695599f9037 *R/vcov.maxLik.R
@@ -67,7 +67,7 @@ e7620fb10d08b6da7c707a8b8f59747b *man/estfun.maxLik.Rd
 812c056426e615573fe71f21ca484374 *man/fnSubset.Rd
 4cb76c1ed5f2dc2508d1010893089052 *man/hessian.Rd
 a46367647c920af750f04adeb8471d04 *man/logLik.maxLik.Rd
-c14d704283d872baafe96ab735660def *man/maxBFGS.Rd
+8f2753d60f2bd73ccebddc24bae8a851 *man/maxBFGS.Rd
 b6cec10908d5134f1fab1f6e78653cfe *man/maxControl.Rd
 d17ca1143a3ddb8e53a5df5172edf83d *man/maxLik-internal.Rd
 0f5e2173869380fe0619e0363b63c923 *man/maxLik-methods.Rd
