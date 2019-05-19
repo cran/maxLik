@@ -210,18 +210,19 @@ signaling it with the
 }
 
 \value{
-  list of class "maxim" with following components:
-  \item{maximum}{\code{fn} value at maximum (the last calculated value
-    if not converged).}
-  \item{estimate}{estimated parameter value.}
-  \item{gradient}{vector, last gradient value which was calculated.  Should be
-    close to 0 if normal convergence.}
-  \item{gradientObs}{matrix of gradients at parameter value \code{estimate}
+  object of class "maxim".  Data can be extracted through the following
+  functions: 
+  \item{\code{\link{maxValue}}}{\code{fn} value at maximum (the last calculated value
+    if not converged.)}
+  \item{coef}{estimated parameter value.}
+  \item{gradient}{vector, last calculated gradient value.  Should be
+    close to 0 in case of normal convergence.}
+  \item{estfun}{matrix of gradients at parameter value \code{estimate}
       evaluated at each observation (only if \code{grad} returns a matrix
       or \code{grad} is not specified and \code{fn} returns a vector).}
   \item{hessian}{Hessian at the maximum (the last calculated value if
     not converged).}
-  \item{code}{return code:
+  \item{returnCode}{return code:
     \itemize{
     \item{1}{ gradient close to zero (normal convergence).}
     \item{2}{ successive function values within tolerance limit (normal
@@ -244,8 +245,16 @@ signaling it with the
     \item{100}{ Initial value out of range.}
     }
   }
-  \item{message}{ a short message, describing the \code{code}.}
-  \item{last.step}{ list describing the last unsuccessful step if
+  \item{returnMessage}{ a short message, describing the return code.}
+  \item{activePar}{logical vector, which parameters are optimized over.
+    Contains only \code{TRUE}-s if no parameters are fixed.}
+  \item{nIter}{number of iterations.}
+  \item{maximType}{character string, type of maximization.}
+  \item{maxControl}{the optimization control parameters in the form of a
+    \code{\link[maxLik:MaxControl-class]{MaxControl}} object.}
+
+  The following components can only be extracted directly (with \code{\$}):
+  \item{last.step}{a list describing the last unsuccessful step if
     \code{code=3} with following components:
     \itemize{
     \item{theta0}{ previous parameter value}
@@ -253,9 +262,6 @@ signaling it with the
     \item{climb}{ the movement vector to the maximum of the quadratic approximation}
     }
   }
-  \item{fixed}{logical vector, which parameters are constants.}
-  \item{iterations}{number of iterations.}
-  \item{type}{character string, type of maximization.}
   \item{constraints}{A list, describing the constrained optimization
     (\code{NULL} if unconstrained).  Includes the following components:
     \itemize{
