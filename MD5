@@ -1,6 +1,6 @@
-d8854cd70f1fcb9f94e940aaa94bcffd *DESCRIPTION
+617a34344d05920056b9792d893cd32d *DESCRIPTION
 1a85293aa0f04e1e05c71808e0d0dd2c *NAMESPACE
-bba4398bf5e52800a5db77373e8ef320 *NEWS
+b4120c1af64cfd75937161d4b1debd99 *NEWS
 07512e0403e60dbe4c310f66880b4fb0 *R/05-classes.R
 6c08c9f4de9848eea7c1969e76dec023 *R/10-MaxControl_class.R
 a9f1662e6dabd302ab25fafb6fead56c *R/20-maxControl.R
@@ -91,8 +91,8 @@ e39688cb93ce2092adca8dcb79617203 *man/sumt.Rd
 c9832e82bd584e5837f81a676c5e877b *man/vcov.maxLik.Rd
 b2d527d3c65311cbb6e3e035a81b4268 *tests/BFGSR.R
 7b1651cf9375022a41f4084af5270f70 *tests/BFGSR.Rout.save
-2c7556dfdfd3402987a7b2e886a8f403 *tests/basicTest.R
-83e402476cad06549405c2c4bf64508d *tests/basicTest.Rout.save
+a2eb699a0ce54027990ce6a52dec6c5e *tests/basicTest.R
+1a2cd942ba483c3255252fc639102bfd *tests/basicTest.Rout.save
 29c954c33db65e9105745799a996cb8d *tests/constraints.R
 76f00749d5657d785a124bb8df9d50e5 *tests/constraints.Rout.save
 70db31a194f4a57154ea8d6ca822dc52 *tests/finalHessian.R
