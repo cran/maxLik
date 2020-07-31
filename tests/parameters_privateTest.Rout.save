@@ -1,7 +1,7 @@
 
-R version 3.2.2 (2015-08-14) -- "Fire Safety"
-Copyright (C) 2015 The R Foundation for Statistical Computing
-Platform: x86_64-redhat-linux-gnu (64-bit)
+R version 3.6.2 (2019-12-12) -- "Dark and Stormy Night"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
@@ -17,6 +17,8 @@ Type 'q()' to quit R.
 
 > 
 > ### Test battery for various optimization parameters for different optimizers.
+> ###
+> ### ...
 > ### 
 > library(maxLik)
 Loading required package: miscTools
@@ -593,8 +595,20 @@ sann_cand = <default Gaussian Markov kernel>
 sann_temp = 10 
 sann_tmax = 10 
 sann_randomSeed = 123 
+SGA_momentum = 0 
+Adam_momentum1 = 0.9 
+Adam_momentum2 = 0.999 
+SG_patience = 
+SG_patienceStep = 1 
+SG_learningRate = 0.1 
+SG_batchSize = 
+SG_clip = 
 iterlim = 1 
+max.rows = 20 
+max.cols = 7 
 printLevel = 0 
+storeValues = FALSE 
+storeParameters = FALSE 
 >                            # iterlim should be 1
 > print(coef(m))
 [1] 0.07158 1.00000
@@ -625,8 +639,20 @@ sann_cand = <default Gaussian Markov kernel>
 sann_temp = 10 
 sann_tmax = 10 
 sann_randomSeed = 123 
+SGA_momentum = 0 
+Adam_momentum1 = 0.9 
+Adam_momentum2 = 0.999 
+SG_patience = 
+SG_patienceStep = 1 
+SG_learningRate = 0.1 
+SG_batchSize = 
+SG_clip = 
 iterlim = 100 
+max.rows = 20 
+max.cols = 7 
 printLevel = 1 
+storeValues = FALSE 
+storeParameters = FALSE 
 > 
 > ## Does open parameters override everything?
 > m <- estimate(control=list(printLevel=2, print.level=1), print.level=0)
@@ -649,15 +675,26 @@ sann_cand = <default Gaussian Markov kernel>
 sann_temp = 10 
 sann_tmax = 10 
 sann_randomSeed = 123 
+SGA_momentum = 0 
+Adam_momentum1 = 0.9 
+Adam_momentum2 = 0.999 
+SG_patience = 
+SG_patienceStep = 1 
+SG_learningRate = 0.1 
+SG_batchSize = 
+SG_clip = 
 iterlim = 100 
+max.rows = 20 
+max.cols = 7 
 printLevel = 0 
+storeValues = FALSE 
+storeParameters = FALSE 
 > 
 > ### does both printLevel, print.level work for condiNumber?
 > condiNumber(hessian(m), print.level=0) # no output
 > condiNumber(hessian(m), printLevel=0)  # no output
 > condiNumber(hessian(m), printLevel=0, print.level=1) # no output
 > 
-> 
 > proc.time()
    user  system elapsed 
-  0.981   0.039   1.014 
+  1.254   0.760   0.751 

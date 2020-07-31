@@ -101,7 +101,7 @@ maxNRCompute <- function(fn,
    iter <- 0
    returnHessian <- ifelse( bhhhHessian, "BHHH", TRUE )
    f1 <- fn(start1, fixed = fixed, sumObs = TRUE,
-      returnHessian = returnHessian, ...)
+            returnHessian = returnHessian, ...)
    if(slot(control, "printLevel") > 2) {
       cat("Initial function value:", f1, "\n")
    }
@@ -350,6 +350,7 @@ maxNRCompute <- function(fn,
          cat("Iteration", iter, "\n")
          cat("Parameter:\n")
          print(start1)
+         cat("Gradient (first 30 components):\n")
          print(head(G1, n=30))
          stop("NA in gradient")
       }
