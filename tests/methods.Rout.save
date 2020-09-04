@@ -1,5 +1,5 @@
 
-R version 3.6.3 (2020-02-29) -- "Holding the Windsock"
+R version 4.0.2 (2020-06-22) -- "Taking Off Again"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -189,48 +189,6 @@ storeParameters = FALSE
 > expect_equal(dim(vcov(a)), c(1,1), info="vcov 1D analytic correct")
 > expect_equal(length(stdEr(a)), 1, info="stdEr 1D analytic correct")
 > 
-> ### ---------- printing ----------
-> ### ---------- max.columns, max.rows ----------
-> loglik <- function(beta) {
-+    e <- y - X %*% beta
-+    -crossprod(e)
-+ }
-> gradlik <- function(beta) {
-+    e <- y - X %*% beta
-+    l <- crossprod(e)
-+    g <- t(-2*t(X) %*% e)
-+    -g
-+ }
-> ## linear regression with many columns
-> X <- matrix(rnorm(20*15), 20, 15)
-> beta <- rep(1, ncol(X))
-> y <- X %*% beta + rnorm(20, sd=0.3)
-> m <- maxNR(loglik, gradlik, start=rep(1, ncol(X)), iterlim=1)
-> options(digits=2)
-> print(summary(m, hessian=TRUE), max.rows=4, max.cols=2)
---------------------------------------------
-Newton-Raphson maximisation 
-Number of iterations: 1 
-Return code: 1 
-gradient close to zero 
-Function value: -0.72 
-Estimates:
-     estimate gradient
-[1,]     1.10  1.2e-09
-[2,]     0.95  4.8e-10
-[3,]     1.00  1.7e-09
-[4,]     1.05 -6.9e-10
- reached getOption("max.rows") -- omitted 11 rows
-Hessian:
-      [,1]  [,2]
-[1,] -54.0  12.7
-[2,]  12.7 -43.8
-[3,]   2.7   4.9
-[4,]   3.1   8.1
- reached getOption("max.cols") -- omitted 13 columns
- reached getOption("max.rows") -- omitted 11 rows
---------------------------------------------
-> 
 > proc.time()
    user  system elapsed 
-   1.22    0.59    0.96 
+  0.406   0.043   0.443 
