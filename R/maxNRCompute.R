@@ -33,8 +33,6 @@ maxNRCompute <- function(fn,
    ##     reltol      - maximum allowed reltive difference (stops if < reltol*(abs(fn) + reltol)
    ##     gradtol     - maximum allowed norm of gradient vector
    ## 
-   ##     iterlim     - maximum # of iterations
-   ##     
    ## finalHessian  include final Hessian?  As computing final hessian does not carry any extra penalty for NR method, this option is
    ##               mostly for compatibility reasons with other maxXXX functions.
    ##               TRUE/something else  include
@@ -51,15 +49,7 @@ maxNRCompute <- function(fn,
    ## estimate    the parameter value at maximum
    ## gradient        gradient
    ## hessian         Hessian
-   ## code        integer code of success:
-   ##             1 - gradient close to zero
-   ##             2 - successive values within tolerance limit
-   ##             3 - could not find a higher point (step error)
-   ##             4 - iteration limit exceeded
-   ##             5 - infinite function value
-   ##             6  infinite gradient
-   ##             7  infinite Hessian
-   ##             100 - initial value out of range
+   ## code        integer code of success, see maximMessage
    ## message     character message describing the code
    ## last.step   only present if code == 3 (step error).  A list with following components:
    ##             theta0    - parameter value which led to the error
@@ -389,14 +379,14 @@ maxNRCompute <- function(fn,
          code <- 3; break
       }
       if( sqrt( crossprod( G1[!fixed] ) ) < slot(control, "gradtol") ) {
-         code <-1; break
+         code <- 1; break
       }
-      if(is.null(newVal) && sum(f1) - sum(f0) < slot(control, "tol")) {
-         code <- 2; break
+      if(is.null(newVal) && ((sum(f1) - sum(f0)) < slot(control, "tol"))) {
+         code <- 2; break  #
       }
       if(is.null(newVal) && abs(sum(f1) - sum(f0)) <
          abs(slot(control, "reltol")*( sum(f1) + slot(control, "reltol")))) {
-         code <- 2; break
+         code <- 8; break
       }
       if(any(is.infinite(f1)) && sum(f1) > 0) {
          code <- 5; break
@@ -417,8 +407,7 @@ maxNRCompute <- function(fn,
       gradientObs <- G1
       colnames( gradientObs ) <- nimed 
       G1 <- colSums(as.matrix(G1 ))
-   }
-   else {
+   } else {
       gradientObs <- NULL
    }
    names( G1 ) <- nimed
@@ -452,13 +441,13 @@ maxNRCompute <- function(fn,
                   gradient=drop(G1),
                  hessian=hessian,
                   code=code,
-       message=maximMessage( code),
+                 message=maximMessage( code),
                   last.step=samm,
                            # only when could not find a
                            # lower point
                   fixed=fixed,
        iterations=iter,
-                  type=maximType)
+      type=maximType)
    if( exists( "gradientObs" ) ) {
       result$gradientObs <- gradientObs
    }
@@ -468,6 +457,3 @@ maxNRCompute <- function(fn,
    class(result) <- c("maxim", class(result))
    invisible(result)
 }
-
-returnCode.maxim <- function(x, ...)
-    x$code

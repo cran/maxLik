@@ -1,6 +1,6 @@
 Package: maxLik
-Version: 1.4-4
-Date: 2020-09-02
+Version: 1.4-6
+Date: 2020-11-24
 Title: Maximum Likelihood Estimation and Related Tools
 Author: Ott Toomet <otoomet@gmail.com>,
    Arne Henningsen <arne.henningsen@gmail.com>,
@@ -17,6 +17,6 @@ Description: Functions for Maximum Likelihood (ML) estimation, non-linear
 License: GPL (>= 2)
 ByteCompile: yes
 NeedsCompilation: no
-Packaged: 2020-09-03 04:21:18 UTC; otoomet
+Packaged: 2020-11-24 15:51:02 UTC; ott
 Repository: CRAN
-Date/Publication: 2020-09-04 05:12:26 UTC
+Date/Publication: 2020-11-24 16:30:05 UTC

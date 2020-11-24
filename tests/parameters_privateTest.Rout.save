@@ -1,6 +1,6 @@
 
-R version 3.6.2 (2019-12-12) -- "Dark and Stormy Night"
-Copyright (C) 2019 The R Foundation for Statistical Computing
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
 R is free software and comes with ABSOLUTELY NO WARRANTY.
@@ -58,7 +58,7 @@ https://r-forge.r-project.org/projects/maxlik/
 --------------------------------------------
 Maximum Likelihood estimation
 Newton-Raphson maximisation, 7 iterations
-Return code 1: gradient close to zero
+Return code 1: gradient close to zero (gradtol)
 Log-Likelihood: -101.2 
 2  free parameters
 Estimates:
@@ -74,7 +74,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 --------------------------------------------
 Maximum Likelihood estimation
 Newton-Raphson maximisation, 4 iterations
-Return code 2: successive function values within tolerance limit
+Return code 2: successive function values within tolerance limit (tol)
 Log-Likelihood: -101.3 
 2  free parameters
 Estimates:
@@ -88,26 +88,16 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 > print(all.equal(mlTol, mlTolC))
 [1] TRUE
 > try(ml <- maxLik( llf, start = startVal, tol=-1))
-Error in validObject(x) : 
-  invalid class "MaxControl" object: 'tol' must be non-negative, not -1
 > try(ml <- maxLik( llf, start = startVal, tol=c(1,2)))
 Error in validObject(x) : 
   invalid class "MaxControl" object: 'tol' must be of length 1, not 2
-In addition: Warning message:
-In if (slot(object, "tol") < 0) { :
-  the condition has length > 1 and only the first element will be used
 > try(ml <- maxLik( llf, start = startVal, tol=TRUE))
 Error in checkSlotAssignment(object, name, value) : 
   assignment of an object of class "logical" is not valid for slot 'tol' in an object of class "MaxControl"; is(value, "numeric") is not TRUE
 > try(ml <- maxLik( llf, start = startVal, control=list(tol=-1)))
-Error in validObject(x) : 
-  invalid class "MaxControl" object: 'tol' must be non-negative, not -1
 > try(ml <- maxLik( llf, start = startVal, control=list(tol=c(1,2))))
 Error in validObject(x) : 
   invalid class "MaxControl" object: 'tol' must be of length 1, not 2
-In addition: Warning message:
-In if (slot(object, "tol") < 0) { :
-  the condition has length > 1 and only the first element will be used
 > try(ml <- maxLik( llf, start = startVal, control=list(tol=TRUE)))
 Error in checkSlotAssignment(object, name, value) : 
   assignment of an object of class "logical" is not valid for slot 'tol' in an object of class "MaxControl"; is(value, "numeric") is not TRUE
@@ -117,7 +107,7 @@ Error in checkSlotAssignment(object, name, value) :
 --------------------------------------------
 Maximum Likelihood estimation
 Newton-Raphson maximisation, 1 iterations
-Return code 2: successive function values within tolerance limit
+Return code 8: successive function values within relative tolerance limit (reltol)
 Log-Likelihood: -118.3 
 2  free parameters
 Estimates:
@@ -131,26 +121,16 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 > print(all.equal(mlRelTol, mlRelTolC))
 [1] TRUE
 > try(ml <- maxLik( llf, start = startVal, reltol=-1))
-Error in validObject(x) : 
-  invalid class "MaxControl" object: 'reltol' must be non-negative, not -1
 > try(ml <- maxLik( llf, start = startVal, reltol=c(1,2)))
 Error in validObject(x) : 
   invalid class "MaxControl" object: 'reltol' must be of length 1, not 2
-In addition: Warning message:
-In if (slot(object, "reltol") < 0) { :
-  the condition has length > 1 and only the first element will be used
 > try(ml <- maxLik( llf, start = startVal, reltol=TRUE))
 Error in checkSlotAssignment(object, name, value) : 
   assignment of an object of class "logical" is not valid for slot 'reltol' in an object of class "MaxControl"; is(value, "numeric") is not TRUE
 > try(ml <- maxLik( llf, start = startVal, control=list(reltol=-1)))
-Error in validObject(x) : 
-  invalid class "MaxControl" object: 'reltol' must be non-negative, not -1
 > try(ml <- maxLik( llf, start = startVal, control=list(reltol=c(1,2))))
 Error in validObject(x) : 
   invalid class "MaxControl" object: 'reltol' must be of length 1, not 2
-In addition: Warning message:
-In if (slot(object, "reltol") < 0) { :
-  the condition has length > 1 and only the first element will be used
 > try(ml <- maxLik( llf, start = startVal, control=list(reltol=TRUE)))
 Error in checkSlotAssignment(object, name, value) : 
   assignment of an object of class "logical" is not valid for slot 'reltol' in an object of class "MaxControl"; is(value, "numeric") is not TRUE
@@ -160,7 +140,7 @@ Error in checkSlotAssignment(object, name, value) :
 --------------------------------------------
 Maximum Likelihood estimation
 Newton-Raphson maximisation, 6 iterations
-Return code 1: gradient close to zero
+Return code 1: gradient close to zero (gradtol)
 Log-Likelihood: -101.2 
 2  free parameters
 Estimates:
@@ -174,26 +154,16 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 > print(all.equal(mlGradtol, mlGradtolC))
 [1] TRUE
 > try(ml <- maxLik( llf, start = startVal, gradtol=-1))
-Error in validObject(x) : 
-  invalid class "MaxControl" object: 'gradtol' must be non-negative, not -1
 > try(ml <- maxLik( llf, start = startVal, gradtol=c(1,2)))
 Error in validObject(x) : 
   invalid class "MaxControl" object: 'gradtol' must be of length 1, not 2
-In addition: Warning message:
-In if (slot(object, "gradtol") < 0) { :
-  the condition has length > 1 and only the first element will be used
 > try(ml <- maxLik( llf, start = startVal, gradtol=TRUE))
 Error in checkSlotAssignment(object, name, value) : 
   assignment of an object of class "logical" is not valid for slot 'gradtol' in an object of class "MaxControl"; is(value, "numeric") is not TRUE
 > try(ml <- maxLik( llf, start = startVal, control=list(gradtol=-1)))
-Error in validObject(x) : 
-  invalid class "MaxControl" object: 'gradtol' must be non-negative, not -1
 > try(ml <- maxLik( llf, start = startVal, control=list(gradtol=c(1,2))))
 Error in validObject(x) : 
   invalid class "MaxControl" object: 'gradtol' must be of length 1, not 2
-In addition: Warning message:
-In if (slot(object, "gradtol") < 0) { :
-  the condition has length > 1 and only the first element will be used
 > try(ml <- maxLik( llf, start = startVal, control=list(gradtol=TRUE)))
 Error in checkSlotAssignment(object, name, value) : 
   assignment of an object of class "logical" is not valid for slot 'gradtol' in an object of class "MaxControl"; is(value, "numeric") is not TRUE
@@ -204,7 +174,7 @@ Error in checkSlotAssignment(object, name, value) :
 --------------------------------------------
 Maximum Likelihood estimation
 Newton-Raphson maximisation with Marquardt (1963) Hessian correction, 7 iterations
-Return code 1: gradient close to zero
+Return code 1: gradient close to zero (gradtol)
 Log-Likelihood: -101.2 
 2  free parameters
 Estimates:
@@ -220,12 +190,10 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 > try(ml <- maxLik( llf, start = startVal, qac=-1))
 Error in checkSlotAssignment(object, name, value) : 
   assignment of an object of class "numeric" is not valid for slot 'qac' in an object of class "MaxControl"; is(value, "character") is not TRUE
+>                            # qac should be "stephalving" or "marquardt"
 > try(ml <- maxLik( llf, start = startVal, qac=c("a", "b")))
-Error in if (!pmatch(slot(object, "qac"), c("stephalving", "marquardt"))) { : 
-  missing value where TRUE/FALSE needed
-In addition: Warning message:
-In if (!pmatch(slot(object, "qac"), c("stephalving", "marquardt"))) { :
-  the condition has length > 1 and only the first element will be used
+Error in validObject(x) : 
+  invalid class "MaxControl" object: 'qac' must be of length 1, not 2
 > try(ml <- maxLik( llf, start = startVal, qac=TRUE))
 Error in checkSlotAssignment(object, name, value) : 
   assignment of an object of class "logical" is not valid for slot 'qac' in an object of class "MaxControl"; is(value, "character") is not TRUE
@@ -233,11 +201,8 @@ Error in checkSlotAssignment(object, name, value) :
 Error in checkSlotAssignment(object, name, value) : 
   assignment of an object of class "numeric" is not valid for slot 'qac' in an object of class "MaxControl"; is(value, "character") is not TRUE
 > try(ml <- maxLik( llf, start = startVal, control=list(qac=c("a", "b"))))
-Error in if (!pmatch(slot(object, "qac"), c("stephalving", "marquardt"))) { : 
-  missing value where TRUE/FALSE needed
-In addition: Warning message:
-In if (!pmatch(slot(object, "qac"), c("stephalving", "marquardt"))) { :
-  the condition has length > 1 and only the first element will be used
+Error in validObject(x) : 
+  invalid class "MaxControl" object: 'qac' must be of length 1, not 2
 > try(ml <- maxLik( llf, start = startVal, control=list(qac=TRUE)))
 Error in checkSlotAssignment(object, name, value) : 
   assignment of an object of class "logical" is not valid for slot 'qac' in an object of class "MaxControl"; is(value, "character") is not TRUE
@@ -382,14 +347,14 @@ fcn value: -207.4
 Condition number of the (active) hessian: 1.815 
 -----Iteration 1 -----
 --------------
-Iteration limit exceeded. 
+Iteration limit exceeded (iterlim) 
 1  iterations
 estimate: 0.8826 1.907 
 Function value: -207.1 
 --------------------------------------------
 Maximum Likelihood estimation
 Newton-Raphson maximisation, 1 iterations
-Return code 4: Iteration limit exceeded.
+Return code 4: Iteration limit exceeded (iterlim)
 Log-Likelihood: -207.1 
 2  free parameters
 Estimates:
@@ -407,7 +372,7 @@ fcn value: -207.4
 Condition number of the (active) hessian: 1.815 
 -----Iteration 1 -----
 --------------
-Iteration limit exceeded. 
+Iteration limit exceeded (iterlim) 
 1  iterations
 estimate: 0.8826 1.907 
 Function value: -207.1 
@@ -515,14 +480,14 @@ step = 1, lnL = -217.6, chi2 = 0.0004481, function increment = 0.0004479
 [2,]     2    6.415 -6.419e-05      1
 --------------------------------------------
 --------------
-Iteration limit exceeded. 
+Iteration limit exceeded (iterlim) 
 2  iterations
 estimate: 1 2 
 Function value: -217.6 
 --------------------------------------------
 Maximum Likelihood estimation
 BFGSR maximization, 2 iterations
-Return code 4: Iteration limit exceeded.
+Return code 4: Iteration limit exceeded (iterlim)
 Log-Likelihood: -217.6 
 2  free parameters
 Estimates:
@@ -546,7 +511,7 @@ step = 1, lnL = -217.6, chi2 = 0.0004481, function increment = 0.0004479
 [2,]     2    6.415 -6.419e-05      1
 --------------------------------------------
 --------------
-Iteration limit exceeded. 
+Iteration limit exceeded (iterlim) 
 2  iterations
 estimate: 1 2 
 Function value: -217.6 
@@ -616,7 +581,7 @@ storeParameters = FALSE
 > ## Does print.level overwrite 'printLevel'?
 > m <- estimate(control=list(printLevel=2, print.level=1))
 --------------
-successive function values within tolerance limit 
+successive function values within relative tolerance limit (reltol) 
 6  iterations
 estimate: 0.07169 1.477 
 Function value: -361.8 
@@ -697,4 +662,4 @@ storeParameters = FALSE
 > 
 > proc.time()
    user  system elapsed 
-  1.254   0.760   0.751 
+  0.785   0.041   0.819 
