@@ -28,10 +28,6 @@ maxNRCompute <- function(fn,
    ##               smaller than the original one:
    ##                  "stephalving"   smaller step in the same direction
    ##                  "marquardt"     Marquardt (1963) approach
-   ##     The stopping criteria
-   ##     tol         - maximum allowed absolute difference between sequential values
-   ##     reltol      - maximum allowed reltive difference (stops if < reltol*(abs(fn) + reltol)
-   ##     gradtol     - maximum allowed norm of gradient vector
    ## 
    ## finalHessian  include final Hessian?  As computing final hessian does not carry any extra penalty for NR method, this option is
    ##               mostly for compatibility reasons with other maxXXX functions.
@@ -88,7 +84,7 @@ maxNRCompute <- function(fn,
    I <- diag(rep(1, nParam))
                            # I is unit matrix
    start1 <- start
-   iter <- 0
+   iter <- 0L
    returnHessian <- ifelse( bhhhHessian, "BHHH", TRUE )
    f1 <- fn(start1, fixed = fixed, sumObs = TRUE,
             returnHessian = returnHessian, ...)
@@ -172,7 +168,7 @@ maxNRCompute <- function(fn,
       if( iter >= slot(control, "iterlim")) {
          code <- 4; break
       }
-      iter <- iter + 1
+      iter <- iter + 1L
       if(!marquardt) {
          lambda1 <- 0
                            # assume the function is concave at start0
@@ -384,8 +380,11 @@ maxNRCompute <- function(fn,
       if(is.null(newVal) && ((sum(f1) - sum(f0)) < slot(control, "tol"))) {
          code <- 2; break  #
       }
-      if(is.null(newVal) && abs(sum(f1) - sum(f0)) <
-         abs(slot(control, "reltol")*( sum(f1) + slot(control, "reltol")))) {
+      if(is.null(newVal) &&
+         (sum(f1) - sum(f0) < slot(control, "reltol")*abs(sum(f1) + slot(control, "reltol")))
+                           # We need abs(f1) to ensure RHS is positive
+                           # (as long as reltol is positive)
+         ) {
          code <- 8; break
       }
       if(any(is.infinite(f1)) && sum(f1) > 0) {
@@ -414,7 +413,7 @@ maxNRCompute <- function(fn,
    ## calculate (final) Hessian
    if(tolower(finalHessian) == "bhhh") {
       if(!is.null(gradientObs)) {
-         hessian <- - crossprod( gradientObs )
+         hessian <- -crossprod( gradientObs )
          attr(hessian, "type") <- "BHHH"
       } else {
          hessian <- NULL
