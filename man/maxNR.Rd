@@ -229,7 +229,7 @@ signaling it with the
   \item{hessian}{Hessian at the maximum (the last calculated value if
     not converged).}
   \item{returnCode}{return code:
-    \itemize{
+    \describe{
     \item{1}{ gradient close to zero (normal convergence).}
     \item{2}{ successive function values within tolerance limit (normal
       convergence).}
@@ -262,7 +262,7 @@ signaling it with the
   The following components can only be extracted directly (with \code{\$}):
   \item{last.step}{a list describing the last unsuccessful step if
     \code{code=3} with following components:
-    \itemize{
+    \describe{
     \item{theta0}{ previous parameter value}
     \item{f0}{ \code{fn} value at \code{theta0}}
     \item{climb}{ the movement vector to the maximum of the quadratic approximation}
@@ -270,7 +270,7 @@ signaling it with the
   }
   \item{constraints}{A list, describing the constrained optimization
     (\code{NULL} if unconstrained).  Includes the following components:
-    \itemize{
+    \describe{
       \item{type}{ type of constrained optimization}
       \item{outer.iterations}{ number of iterations in the constraints step}
       \item{barrier.value}{ value of the barrier function}

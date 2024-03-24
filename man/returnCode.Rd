@@ -35,7 +35,7 @@ returnMessage(x, ...)
   or the problem.
 
   The known codes and the related messages are:
-  \itemize{
+  \describe{
     \item{1}{ gradient close to zero (normal convergence).}
     \item{2}{ successive function values within tolerance limit (normal
       convergence).}
