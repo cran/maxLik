@@ -1,5 +1,5 @@
 Package: maxLik
-Version: 1.5-2.1
+Version: 1.5-2.2
 Title: Maximum Likelihood Estimation and Related Tools
 Authors@R: c(person("Ott", "Toomet", role=c("aut", "cre"), email="otoomet@gmail.com"),
              person("Arne", "Henningsen", role=c("aut"), email="arne.henningsen@gmail.com"),
@@ -19,7 +19,7 @@ Description: Functions for Maximum Likelihood (ML) estimation, non-linear
 License: GPL (>= 2)
 ByteCompile: yes
 NeedsCompilation: no
-Packaged: 2024-03-24 11:40:11 UTC; hornik
+Packaged: 2025-12-29 15:06:20 UTC; hornik
 Author: Ott Toomet [aut, cre],
   Arne Henningsen [aut],
   Spencer Graves [ctb],
@@ -28,4 +28,4 @@ Author: Ott Toomet [aut, cre],
   Luca Scrucca [ctb]
 Maintainer: Ott Toomet <otoomet@gmail.com>
 Repository: CRAN
-Date/Publication: 2024-03-24 14:45:20 UTC
+Date/Publication: 2025-12-29 15:36:12 UTC

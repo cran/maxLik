@@ -26,7 +26,7 @@
 \author{Arne Henningsen, Ott Toomet}
 
 \seealso{\code{\link[miscTools]{nObs}}, \code{\link{maxLik}},
-   \code{\link{nParam}}.}
+   \code{\link[miscTools]{nParam}}.}
 
 \examples{
 ## fit a normal distribution by ML
