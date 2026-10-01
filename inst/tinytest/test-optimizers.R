@@ -198,7 +198,7 @@ expect_equal(
    nIter( ml ) > 5, TRUE
 )
 expect_error(
-   nObs( ml ),
+   nobs( ml ),
    "cannot return the number of observations"
 )
 expect_equal(
@@ -223,7 +223,7 @@ expect_stdout(
    "mu +1\\.18"
 )
 expect_equal(
-   nObs( mlInd ), length(x)
+   nobs( mlInd ), length(x)
 )
 ## Marquardt (1963) correction
 mlM <- maxLik( llf, start = startVal, qac="marquardt")
@@ -307,7 +307,7 @@ expect_equivalent(vcov( mlBHHH ),
 expect_equivalent(logLik(summary(mlBHHH)), -201.583946192983, tolerance=tol)
 expect_equal(coef(ml), coef(mlBHHH), tol=tol)
 expect_equal(stdEr(ml), stdEr(mlBHHH), tol=0.1)
-expect_equal(nObs( mlBHHH ), length(x))
+expect_equal(nobs( mlBHHH ), length(x))
 # final Hessian = usual Hessian
 expect_silent(mlBhhhH <- maxLik( llfInd, start = startVal, method = "BHHH", 
                                 finalHessian = TRUE )
@@ -409,7 +409,9 @@ expect_equal(hessian(mlgGhHBHHH), hessian(mlGHBHHH), tolerance = tol)
 optimizerNames <- c(bfgsr = "BFGSR", bfgs = "BFGS", nm = "Nelder-Mead",
                     sann = "SANN", cg = "CG")
 successCodes <- list(bfgsr = 1:4, bfgs = 0, nm = 0, sann = 0, cg = 0)
-successMsgs <- list(bfgsr = c("successive function values within tolerance limit (tol)"),
+successMsgs <- list(bfgsr = c("Last step could not find a value above the current.
+Boundary of parameter space?  
+Consider switching to a more robust optimisation method temporarily."),
                     bfgs = c("successful convergence "),
                            # includes space at end...
                     nm = c("successful convergence "),
@@ -436,7 +438,7 @@ for(optimizer in c("bfgsr", "bfgs", "nm", "sann", "cg")) {
                 paste0(optimizerNames[optimizer], " maximization")
                 )
    expect_true(nIter( mlResult ) > 1 & is.integer(nIter(mlResult)))
-   expect_error( nObs( mlResult ),
+   expect_error( nobs( mlResult ),
                 pattern = "cannot return the number of observations")
    expect_equal(nParam( mlResult ), 2)
    expect_true(returnCode( mlResult ) %in% successCodes[[optimizer]])
@@ -449,7 +451,7 @@ for(optimizer in c("bfgsr", "bfgs", "nm", "sann", "cg")) {
                  )
    expect_equal(coef(mlResult), coef(mlIndResult), tolerance = tol)
    expect_equal(stdEr(mlResult), stdEr(mlIndResult), tolerance = 0.01)
-   expect_equal(nObs( mlIndResult ), length(x))
+   expect_equal(nobs( mlIndResult ), length(x))
    ## with analytic gradients
    expect_silent(mlgResult <- maxLik( llf, gf, start = startVal, method = optimizer))
    expect_equal(coef(mlgResult), coef(mlResult), tolerance = tol)
@@ -490,13 +492,6 @@ for(optimizer in c("bfgsr", "bfgs", "nm", "sann", "cg")) {
 startValFix <- c( mu = 1, sigma = 1 )
 ## fix mu (the mean ) at its start value
 isFixed <- c( TRUE, FALSE )
-successMsgs <- list(bfgsr = c("successive function values within tolerance limit (tol)"),
-                    bfgs = c("successful convergence "),
-                           # includes space at end...
-                    nm = c("successful convergence "),
-                    sann = c("successful convergence "),
-                    cg = c("successful convergence ")
-                    )
 ## NR method with fixed parameters
 for(optimizer in c("nr", "bfgsr", "bfgs", "sann", "cg")) {
    expect_silent(

@@ -16,19 +16,13 @@ tidy.maxLik <- function (x,  ...) {
   ret
 }
 
-
-glance.maxLik <- function (x, ...) {
-  require_tibble_package()
-
-  ll <- logLik(x)
-  nobs <- tryCatch(nObs(x), error = function(e) NA)
-                           # nobs = NA in case of error
-  ret <- tibble::tibble(
-           df     = attr(ll, "df"),
-           logLik = as.numeric(ll),
-           AIC    = AIC(x),
-           nobs   = nobs
-         )
-  
-  ret
+tidy.maxim <- function(x, ...) {
+   coefs <- coef(x)
+   term <- names(coefs)
+   if(is.null(term))
+      term <- seq(along=coefs)
+   tibble::tibble(term,
+                  estimate=coefs,
+                  gradient=gradient(x)
+                  )
 }

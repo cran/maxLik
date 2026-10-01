@@ -1,5 +1,5 @@
 ## Test methods.  Note: only test if methods work in terms of dim, length, etc,
-## not in terms of values here
+## not in terms of values
 ##
 ## ...
 ## * printing summary with max.columns, max.rows
@@ -18,10 +18,6 @@ compareTolerance = 0.001
 x <- runif(20)
 y <- x + rnorm(20)
 m <- lm(y ~ x)
-expect_equal(
-   nObs(m), length(y),
-   info = "nObs.lm must be correct"
-)
 expect_equal(
    stdEr(m),
    c(`(Intercept)` = 0.357862322670879, x = 0.568707094458801)
@@ -70,6 +66,10 @@ expect_equal(length(stdEr(a)), 1, info="stdEr 1D numeric correct")
 a <- maxLik(loglik, gradlik, hesslik, start=1)
 expect_equal(dim(vcov(a)), c(1,1), info="vcov 1D analytic correct")
 expect_equal(length(stdEr(a)), 1, info="stdEr 1D analytic correct")
+## if hessian missing, vcov and stdEr should be NA-s
+a$hessian <- NULL
+expect_equivalent(vcov(a), matrix(NA_real_, 1, 1))
+expect_equivalent(stdEr(a), c(NA_real_))
 
 ## ---------- both individual and aggregated likelihood ----------
 NOBS <- 100
@@ -98,11 +98,22 @@ startVal <- c(mu=2, sigma=1)
 ml <- maxLik( llf, start = startVal)
 mlInd <- maxLik( llfInd, start = startVal)
 
+mx <- maxNR(llf, start=startVal)
+
 ## ---------- Various summary methods ----------
 ## These should work and produce consistent results
 expect_stdout(
    show(confint(ml)),
    pattern = "2.5 % +97.5 %\nmu +[[:digit:] .]+\n"
+)
+## No nobs -> should give NA for nobs
+expect_stdout(
+   show(ml),
+   pattern = "Maximum Likelihood estimation
+Newton-Raphson maximisation, 4 iterations
+Return code 1: gradient close to zero \\(gradtol\\)
+Log-Likelihood:.* \\(2 free parameter\\(s\\)\\)
+Estimate\\(s\\): 2.* "
 )
 expect_stdout(
    show(glance(ml)),
@@ -116,6 +127,30 @@ expect_stdout(
    show(tidy(ml)),
    pattern = "term.*estimate std.error statistic.*p.value"
 )
+## For maxim methods
+expect_stdout(
+   show(mx),
+   pattern = "Newton-Raphson maximisation, 4 iterations
+Return code 1: gradient close to zero \\(gradtol\\)
+Value:.* \\(2 free parameter\\(s\\)\\)
+Estimate\\(s\\): 2.* "
+)
+expect_stdout(
+   print(mx),
+   pattern = "Newton-Raphson maximisation, 4 iterations
+Return code 1: gradient close to zero \\(gradtol\\)
+Value:.* \\(2 free parameter\\(s\\)\\)
+Estimate\\(s\\): 2.* "
+)
+expect_stdout(
+   show(glance(mx)),
+   pattern = "value iterations     gradient  code.*1 -140.          4 0.0000[[:digit:]]+     1"
+)
+expect_stdout(
+   show(tidy(mx)),
+   pattern = "term  estimate     gradient.*1 mu       2.19  0.00"
+)
+
 
 
 ### ---------- estfun, bread, sandwich ----------

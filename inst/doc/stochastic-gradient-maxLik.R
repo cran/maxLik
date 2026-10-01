@@ -252,5 +252,3 @@ plot(seq(length=length(val))-1, -val, type="l",
      xlab="epoch", ylab="MSE", main="Loss",
      log="y")
 summary(res)
-
-

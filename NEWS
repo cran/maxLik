@@ -1,8 +1,37 @@
 THIS IS THE CHANGELOG OF THE "maxLik" PACKAGE
 
 Please note that only the most significant user visible changes are
-reported here.  A full ChangeLog is available in the log messages of
-the SVN repository on R-Forge.
+reported here.  A full ChangeLog is available in the github log at
+https://github.com/arne-henningsen/maxLik
+
+
+     CHANGES IN VERSION 1.6-10 (2025-09-29)
+
+* 'tidy' and 'glance' methods for 'maxim' objects
+
+* 'print' and 'show' methods for 'maxim' objects
+
+* stdEr returns NA-vector when Hessian missing
+
+* the preferred way to query number of obs is 'stats4::nobs',
+  not 'miscTools::nObs'
+
+* maxBFGS and other optim-based methods: documentation mentions that
+  the function value output is negative when requesting with printLevel
+
+* missings in the initial value results in error, not the special return
+  code.
+
+* fixed some documentation issues
+
+
+     Versions 1.6-0 to 1.6-8 did not pass CRAN checks
+
+
+     CHANGES IN VERSION 1.5-2 (2020-07-26)
+
+* fixed superfluous export commands in Namespace
+
 
      CHANGES IN VERSION 1.5-0 (2020-07-26)
 

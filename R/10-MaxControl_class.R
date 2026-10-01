@@ -38,6 +38,10 @@ checkMaxControl <- function(object) {
                      paste("'", s, "' must be of length 1, not ",
                            length(slot(object, s)), sep=""))
       }
+      ## If lengths are wrong then return right here, do not
+      ## check other problems
+      if(length(errors) > 0)
+         return(errors)
    }
    ## check missings
    for(s in slotNames(object)) {
@@ -202,8 +206,8 @@ setClass("MaxControl",
          ),
          ##
          prototype=prototype(
-             tol=1e-8,
-             reltol=sqrt(.Machine$double.eps),
+            tol= 1e-8,
+            reltol= 1e-8,
              gradtol=1e-6,
              steptol=1e-10,
                            #
